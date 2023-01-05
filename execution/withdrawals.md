@@ -41,7 +41,7 @@ payload: PAYLOAD
 
 `PAYLOAD` is the ABI encoded arguments for a solidity function with ABI
 
-```c#
+```solidity
 function withdraw(uint256 amount, address address)
 ```
 
