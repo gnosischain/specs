@@ -8,10 +8,11 @@ Provide a way for beacon chain withdrawals to enter into the EVM. Extends [ether
 
 ## Specification
 
-| Name                  | Value |
-| --------------------- | ----- |
-| `FORK_TIMESTAMP`      | `TBD` |
-| `WITHDRAWAL_CONTRACT` | `TBD` |
+| Name                  | Value                                        |
+| --------------------- | -------------------------------------------- |
+| `FORK_TIMESTAMP`      | `TBD`                                        |
+| `WITHDRAWAL_CONTRACT` | `TBD`                                        |
+| `SYSTEM_SENDER`       | `0xfffffffffffffffffffffffffffffffffffffffe` |
 
 Beginning with the execution timestamp `FORK_TIMESTAMP`, execution clients **MUST** introduce the following extensions to payload validation and processing:
 
@@ -29,6 +30,7 @@ The `withdrawals` in an execution payload are processed **after** any user-level
 For each `withdrawal` in the list of `execution_payload.withdrawals`, the implementation must construct and execute an EVM transaction as follows:
 
 ```
+sender: SYSTEM_SENDER
 max_priority_fee_per_gas: TBD
 max_fee_per_gas: TBD
 gas_limit: TBD
