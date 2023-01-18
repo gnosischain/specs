@@ -27,13 +27,13 @@ The following sections of [ethereum/eip-4895](https://eips.ethereum.org/EIPS/eip
 
 The `withdrawals` in an execution payload are processed **after** any user-level transactions are applied.
 
-For each `withdrawal` in the list of `execution_payload.withdrawals`, the implementation must construct and execute an EVM transaction as follows:
+The implementation must construct and execute one system EVM transaction as follows:
 
 ```
 sender: SYSTEM_SENDER
-max_priority_fee_per_gas: TBD
-max_fee_per_gas: TBD
-gas_limit: TBD
+max_priority_fee_per_gas: 0
+max_fee_per_gas: 0
+gas_limit: 1600000
 destination: WITHDRAWAL_CONTRACT
 amount: 0
 payload: PAYLOAD
@@ -42,12 +42,18 @@ payload: PAYLOAD
 `PAYLOAD` is the ABI encoded arguments for a solidity function with ABI
 
 ```solidity
-function withdraw(uint256 amount, address address)
+function withdrawals(uint64[] amounts, address[] addresses)
 ```
 
-Where `amount` equals `withdrawal.amount` and `address` equals `withdrawal.address`.
+Where `amounts` is the consecutive collection of each `withdrawal.amount` as GWei, and `addresses` is the consecutive collection of each `withdrawal.address`. `WITHDRAWAL_CONTRACT` must assert that `amounts` and `addresses` are of the same length.
 
-If the transaction reverts, or runs out of the gas, the entire block **MUST** be considered invalid.
+System transactions rules are:
+
+- Gas limit checks are disabled compared to `block.gas_limit - block.gas_used` ([ref](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L204-L220)).
+- Caller balance and nonce checks are disabled. Nonce for system address is not incremented ([ref_1](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L256-L287), [ref_2](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L468-L471)).
+- Fees are not added ([ref](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L421-L448))
+- `block.gas_used` is not incremented ([ref](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L482-L485))
+- If the transaction reverts, or runs out of the gas, the entire block **MUST** be considered invalid.
 
 ## Rationale
 
