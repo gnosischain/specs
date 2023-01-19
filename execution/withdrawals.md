@@ -33,7 +33,7 @@ The implementation must construct and execute one system EVM transaction as foll
 sender: SYSTEM_SENDER
 max_priority_fee_per_gas: 0
 max_fee_per_gas: 0
-gas_limit: 1600000
+gas_limit: 30000000
 destination: WITHDRAWAL_CONTRACT
 amount: 0
 payload: PAYLOAD
