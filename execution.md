@@ -5,4 +5,4 @@ _TODO_
 - [ ] AuRa
 - [ ] POSDAO
 - [ ] POSDAO post-merge
-- [ ] Withdrawals
+- [Withdrawals](./execution/withdrawals.md)
