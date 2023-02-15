@@ -42,7 +42,7 @@ payload: PAYLOAD
 `PAYLOAD` is the ABI encoded arguments for a solidity function with ABI
 
 ```solidity
-function withdrawals(uint64[] amounts, address[] addresses)
+function executeSystemWithdrawals(uint64[] amounts, address[] addresses)
 ```
 
 Where `amounts` is the consecutive collection of each `withdrawal.amount` as GWei, and `addresses` is the consecutive collection of each `withdrawal.address`. `WITHDRAWAL_CONTRACT` must assert that `amounts` and `addresses` are of the same length.
