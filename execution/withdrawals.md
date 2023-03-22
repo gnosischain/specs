@@ -8,11 +8,12 @@ Provide a way for beacon chain withdrawals to enter into the EVM. Extends [ether
 
 ## Specification
 
-| Name                  | Value                                        |
-| --------------------- | -------------------------------------------- |
-| `FORK_TIMESTAMP`      | `TBD`                                        |
-| `WITHDRAWAL_CONTRACT` | `TBD`                                        |
-| `SYSTEM_SENDER`       | `0xfffffffffffffffffffffffffffffffffffffffe` |
+| Name                                | Value                                        |
+| ----------------------------------- | -------------------------------------------- |
+| `FORK_TIMESTAMP`                    | `TBD`                                        |
+| `WITHDRAWAL_CONTRACT`               | `TBD`                                        |
+| `SYSTEM_SENDER`                     | `0xfffffffffffffffffffffffffffffffffffffffe` |
+| `MAX_FAILED_WITHDRAWALS_TO_PROCESS` | 4                                            |
 
 Beginning with the execution timestamp `FORK_TIMESTAMP`, execution clients **MUST** introduce the following extensions to payload validation and processing:
 
@@ -42,10 +43,14 @@ payload: PAYLOAD
 `PAYLOAD` is the ABI encoded arguments for a solidity function with ABI
 
 ```solidity
-function executeSystemWithdrawals(uint64[] amounts, address[] addresses)
+function executeSystemWithdrawals(
+    uint256 maxFailedWithdrawalsToProcess,
+    uint64[] amounts,
+    address[] addresses
+)
 ```
 
-Where `amounts` is the consecutive collection of each `withdrawal.amount` as GWei, and `addresses` is the consecutive collection of each `withdrawal.address`. `WITHDRAWAL_CONTRACT` must assert that `amounts` and `addresses` are of the same length.
+Where `maxFailedWithdrawalsToProcess` is a network constant equal to `MAX_FAILED_WITHDRAWALS_TO_PROCESS`. `amounts` is the consecutive collection of each `withdrawal.amount` as GWei, and `addresses` is the consecutive collection of each `withdrawal.address`. `WITHDRAWAL_CONTRACT` must assert that `amounts` and `addresses` are of the same length.
 
 System transactions rules are:
 
