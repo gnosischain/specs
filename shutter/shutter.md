@@ -35,7 +35,7 @@ This section describes the various components of the system and how they interac
 | Key Broadcast Contract | Shutter          |
 | Keyper Set Manager     | Shutter          |
 | Encrypting RPC Server  | Tbd              |
-| Proxy                  | Shutter          |
+| Decryption Key Relay   | Shutter          |
 
 ## Keypers
 
@@ -88,9 +88,13 @@ On startup, validators check if they are registered in the Validator Registry. I
 ### Interfaces with
 
 - Key Broadcast Contract: To get eon key
-- Keypers: To receive decryption keys
 - Sequencer Contract: To get encrypted transactions
 - Validator Registry: To register and check registration
+
+And one of:
+
+- Keypers: To receive decryption keys
+- Decryption Key Relay: To receive keys from
 
 ### Interface
 
@@ -184,6 +188,32 @@ The Encrypting RPC Server exposes the standard Ethereum RPC API. Whenever a user
 ### Interface
 
 See [https://ethereum.github.io/execution-apis/api-documentation/](https://ethereum.github.io/execution-apis/api-documentation/).
+
+## Decryption Key Relay
+
+The Decryption Key Relay allows users to listen to decryption keys without having to join the libp2p gossip network themselves. It subscribes to both the `decryptionKey` and `decryptionKeyShare` topics. It applies the filtering logic described in the Keyper-section. It relays the remaining messages to the clients that suscribed to the interface described below.
+
+### Interfaces with
+
+- Keypers: To receive keys from
+- Validators: To send keys to
+
+### Interface
+
+The relay provides an HTTP GET endpoint at path `/v1/decryption_keys` with the following required query parameters:
+
+- `instance_id`: A decimal encoded instance ID
+
+If the relay is connected to a gossip network with different instance ID, it responds with status code `404`. Otherwise, an SSE stream is opened that yields items of the following format:
+
+```jsx
+event: decryption_key;
+data: data;
+```
+
+`data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under “Keypers”.
+
+As the relay is meant to be an only provisional solution it does not perform any authentication.
 
 ## Encodings
 
