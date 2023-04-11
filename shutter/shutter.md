@@ -232,8 +232,6 @@ data: data;
 
 `data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under “Keypers”.
 
-As the relay is meant to be an only provisional solution it does not perform any authentication.
-
 ## Encodings
 
 This section describes how various data types used above are canonically encoded.
