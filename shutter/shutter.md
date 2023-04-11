@@ -263,15 +263,25 @@ message Envelope {
 
 The cryptographic objects described below are composed of elements of the bilinear group BN256. Consequently, their encoding functions are composed of the encoding functions of these primitives.
 
-The relevant primitives are points on the curves G1 and G2. They are encoded according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding).
+The relevant primitives are points on the curves G1 and G2. They are encoded according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding). The encoding functions are denoted `encode_g1` and `encode_g2`, respectively.
 
 #### Decryption Keys
 
-Decryption keys are points on G1 and are encoded accordingly.
+Decryption keys are points on G1 and are encoded accordingly:
+
+```Python
+def encode_decryption_key(k):
+    return encode_g1(k)
+```
 
 #### Decryption Key Shares
 
-Decryption key shares are points on G1 and are encoded accordingly.
+Decryption key shares are points on G1 and are encoded accordingly:
+
+```Python
+def encode_decryption_key_share(k):
+    return encode_g1(k)
+```
 
 #### Encrypted Messages
 
@@ -281,4 +291,10 @@ Encrypted messages are tuples `(C1, C2, C3)` where
 - `C2` is a 32 bytes block, and
 - `C3` is a sequence of one or more 32 bytes blocks.
 
-Its encoding is the concatenation of its part, i.e. `encode_g2(C1) | C2 | C3[0] | ... | C3[n]`.
+Its encoding is the concatenation of its part, i.e. `encode_g2(C1) | C2 | C3[0] | ... | C3[n]` where `|` denotes concatenation and .
+
+```Python
+def encode_encrypted_message(m):
+    c1, c2, c3 = m
+    return encode_g2(c1) + c2 + b"".join(c3)
+```
