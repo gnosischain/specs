@@ -239,6 +239,120 @@ data: data;
 
 The second endpoint takes a decimal slot number as parameter and returns the corresponding decryption key in `0x`-prefixed, hex-encoded format. If the relay does not know the key for the requested slot, it sends a response with status code `404`. The relay should be able to respond to requests for the current and the most recent slots if they observed the corresponding keys on the network. They may prune keys when they become too old or on restart.
 
+## Cryptography
+
+This section defines the functions `encrypt` and `decrypt` that are used to encrypt and decrypt the users' transactions and some corresponding types. The cryptographic functions are based on the bilinear group BN256 as used in [EIP-196](https://eips.ethereum.org/EIPS/eip-196) and [EIP-197](https://eips.ethereum.org/EIPS/eip-197).
+
+### Definitions
+
+We define the following types and constants:
+
+| Type                                            | Description                      |
+| ----------------------------------------------- | -------------------------------- |
+| G1                                              | An element of the BN256-curve G1 |
+| G2                                              | An element of the BN256-curve G2 |
+| GT                                              | An element of the BN256-curve GT |
+| Block                                           | A 32-byte block                  |
+| EncryptedMessage = (G2, Block, Sequence[Block]) | An encrypted message             |
+
+| Constants | Description                   | Value                                                                         |
+| --------- | ----------------------------- | ----------------------------------------------------------------------------- |
+| ORDER     | The order of groups G1 and G2 | 21888242871839275222246405745257275088548364400416034343698204186575808495617 |
+
+The following functions are considered prerequisites:
+
+| Function                       | Description                                  |
+| ------------------------------ | -------------------------------------------- |
+| keccak256(bytes) -> Block      | The keccak-256 hash function                 |
+| pairing(G1, G2) -> GT          | The BN256-defined pairing function           |
+| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar     |
+| gt_scalar_mult(GT, int)        | Multiply an element of GT by a scalar        |
+| encode_g1(G1) -> bytes         | Encode an element of G1 according to EIP-197 |
+| encode_g2(G2) -> bytes         | Encode an element of G2 according to EIP-197 |
+
+### Helper Functions
+
+```Python
+def hash_block_to_int(block: Block) -> int:
+    h = keccak256(block)
+    i = int.from_bytes(h, "big")
+    return i % ORDER
+
+def hash_gt_to_block(preimage: GT) -> Block:
+    b = encode_gt(preimage)
+    return hash_bytes_to_block(b)
+
+def hash_bytes_to_block(preimage: bytes) -> Block:
+    return keccak256(preimage)
+
+def xor_blocks(block1: Block, block2: Block) -> Block:
+    return Block(bytes(b1 ^ b2 for b1, b2 in zip(block1, block2)))
+
+def pad_and_split(b: bytes): Sequence[Block]:
+    # pad according to PKCS #7
+    n = 32 - len(b) % 32
+    padded = b + n * b"\x00"
+    return [padded[i:i + 32] for i in range(0, len(padded), 32)]
+
+def encode_gt(value: GT) -> bytes:
+    pass  # TODO
+```
+
+### Encryption
+
+The following code defines the function `encrypt` which encrypts a given message for a particular slot given an eon key.
+
+```Python
+def encrypt(message: bytes, slot: int, eon_key: G2, sigma: Block) -> EncryptedMessage:
+    message_blocks = pad_and_split(message)
+    r = compute_r(sigma)
+    epoch_id = compute_epoch_id(slot)
+    return (
+        compute_c1(r),
+        compute_c2(sigma, r, epoch_id, eon_key),
+        compute_c3(message_blocks, sigma),
+    )
+
+def compute_r(sigma: Block) -> int:
+    return hash_block_to_int(sigma)
+
+def compute_c1(r: int) -> G2:
+    return g2_scalar_base_mult(r)
+
+def compute_c2(sigma: Block, r: int, epoch_id: G1, eon_key: G2) -> Block:
+    p = pairing(epoch_id, eon_key)
+    preimage = gt_scalar_mult(p, r)
+    key = hash_gt_to_block(preimage)
+    return xor_blocks(sigma, key)
+
+def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
+    keys = compute_block_keys(sigma, len(message_blocks))
+    return [xor_blocks(key, block) for key, block in zip(keys, blocks)]
+
+def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
+    suffix_length = max(n.bit_length() + 7) // 8, 1)
+    suffixes = [n.to_bytes(suffix_length, "big")]
+    preimages = [sigma + suffix for suffix in suffixes]
+    keys = [hash_bytes_to_block(preimage) for preimage in preimages]
+    return keys
+```
+
+### Encoding
+
+The following functions define how some of the cryptographic objects are encoded into bytes.
+
+```Python
+def encode_decryption_key(decryption_key: G1) -> bytes:
+    return encode_g1(decryption_key)
+
+def encode_decryption_key_share(decryption_key_share: G1) -> bytes:
+    return encode_g1(k)
+
+def encode_encrypted_message(encrypted_message: EncryptedMessage) -> bytes:
+    c1, c2, c3 = encrypted_message
+    return encode_g2(c1) + c2 + b"".join(c3)
+```
+
 ## Encodings
 
 This section describes how various data types used above are canonically encoded.
@@ -256,43 +370,3 @@ message Envelope {
 
 - `version`: `0`, to be incremented with future incompatible protocol changes.
 - `message`: Any of the above defined message types.
-
-### Cryptographic Objects
-
-The cryptographic objects described below are composed of elements of the bilinear group BN256. Consequently, their encoding functions are composed of the encoding functions of these primitives.
-
-The relevant primitives are points on the curves G1 and G2. They are encoded according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding). The encoding functions are denoted `encode_g1` and `encode_g2`, respectively.
-
-#### Decryption Keys
-
-Decryption keys are points on G1 and are encoded accordingly:
-
-```Python
-def encode_decryption_key(k):
-    return encode_g1(k)
-```
-
-#### Decryption Key Shares
-
-Decryption key shares are points on G1 and are encoded accordingly:
-
-```Python
-def encode_decryption_key_share(k):
-    return encode_g1(k)
-```
-
-#### Encrypted Messages
-
-Encrypted messages are tuples `(C1, C2, C3)` where
-
-- `C1` is a point on G2,
-- `C2` is a 32 bytes block, and
-- `C3` is a sequence of one or more 32 bytes blocks.
-
-Its encoding is the concatenation of its part, i.e. `encode_g2(C1) | C2 | C3[0] | ... | C3[n]` where `|` denotes concatenation and .
-
-```Python
-def encode_encrypted_message(m):
-    c1, c2, c3 = m
-    return encode_g2(c1) + c2 + b"".join(c3)
-```
