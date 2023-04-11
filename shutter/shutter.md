@@ -53,16 +53,33 @@ During the time the keyper set is active, the keypers continuously generate decr
 
 ### Interface
 
-For each slot, active keypers provide keys to interested parties via a [libp2p gossipsub network](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/README.md). The relevant topics are `decryptionKeyShare` and `decryptionKey`. On the former, keypers broadcast decryption key shares, on the latter the corresponding aggregated decryption keys, in the form of `DecryptionKeyShare` and `DecryptionKey` messages encoded as described below. Listeners should subscribe to at least the `decryptionKey` topic and may additionally, for improved latency, subscribe to `decryptionKeyShare` and aggregate by themselves.
+For each slot, active keypers provide keys to interested parties via a [libp2p gossipsub network](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/README.md). The relevant topics are `decryptionKeyShare` and `decryptionKey`. On the former, keypers broadcast decryption key shares, on the latter the corresponding aggregated decryption keys, in the form of the protocol buffers `DecryptionKeyShare` and `DecryptionKey`:
 
-Message fields are set as follows:
+```jsx
+message DecryptionKeyShare {
+    uint64 instanceID = 1;
+    uint64 eon = 2;
+    bytes epochID = 3;
+    uint64 keyperIndex = 4;
+    bytes share = 5;
+}
 
-- `instanceID` is the applicable instance ID (100001 for Gnosis Chain, 200001 for Chiado).
-- `eon` is the index of the eon of which the slot is part of.
-- `epochID` is the big-endian byte-encoded slot number.
-- `keyperIndex` is the index of the keyper in the relevant keyper set.
-- `share` is the byte-encoded decryption key share.
-- `key` is the byte-encoded decryption key.
+message DecryptionKey {
+    uint64 instanceID = 1;
+    uint64 eon = 2;
+    bytes epochID = 3;
+    bytes key = 4;
+}
+```
+
+- `instanceID`: The instance ID of the network.
+- `eon`: The eon index of the key.
+- `epochID`: The slot number of the key, in big-endian encoding (note that this field is unrelated to the epochs of the beacon chain).
+- Only present in decryption key share messages:
+  - `keyperIndex`: The zero-based index of the keyper in the keyper set who generated the key share.
+  - `share`: A decryption key share encoded as described in the _Encoding_ section.
+- Only present in decryption key messages:
+  - `key`: The decryption key encoded as described in the _Encoding_ section.
 
 Participants in the gossip network should apply the following message validation logic in order to prevent propagation of invalid messages:
 
@@ -76,6 +93,8 @@ Participants in the gossip network should apply the following message validation
   - Check that `key` is the valid decryption key for epoch `epochID` given the eon key for `eon` broadcast in the Key Broadcast Contract.
 
 Peers for the gossipsub topics can be found via bootstrap nodes that immediately PRUNE connection attempts with additional [gossipsub v1.1 PX](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md#prune-backoff-and-peer-exchange) metadata.
+
+Listeners not involved in key generation should subscribe to at least the `decryptionKey` topic and may additionally, for improved latency, subscribe to `decryptionKeyShare` and aggregate by themselves.
 
 ## Validator
 
@@ -221,33 +240,7 @@ This section describes how various data types used above are canonically encoded
 
 ### P2P Messages
 
-Gossiped p2p messages are encoded as one of the following protocol buffers:
-
-```jsx
-message DecryptionKeyShare {
-    uint64 instanceID = 1;
-    uint64 eon = 2;
-    bytes epochID = 3;
-    uint64 keyperIndex = 4;
-    bytes share = 5;
-}
-
-message DecryptionKey {
-    uint64 instanceID = 1;
-    uint64 eon = 2;
-    bytes epochID = 3;
-    bytes key = 4;
-}
-```
-
-- `instanceID`: The ID of the instance for which the message is relevant.
-- `eon`: An eon index.
-- `epochID`: A big-endian encoded slot number. Note that this field is unrelated to the epochs of the beacon chain.
-- `keyperIndex`: A zero-based number indexing a keyper set.
-- `key`: A decryption key encoded as described below.
-- `share`: A decryption key share encoded as described below.
-
-Messages are wrapped in the following envelope:
+Gossiped p2p messages are encoded as protocol buffers and are wrapped in the following envelope:
 
 ```jsx
 message Envelope {
