@@ -219,18 +219,25 @@ The Decryption Key Relay allows users to listen to decryption keys without havin
 
 ### Interface
 
-The relay provides an HTTP GET endpoint at path `/v1/decryption_keys` with the following required query parameters:
+The relay provides two HTTP GET endpoints:
 
-- `instance_id`: A decimal encoded instance ID
+`/v1/decryption_keys`
+`/v1/decryption_keys/{slot}`
 
-If the relay is connected to a gossip network with different instance ID, it responds with status code `404`. Otherwise, an SSE stream is opened that yields items of the following format:
+Both endpoints require the query parameter `instance_id`, expected to be a decimal encoded instance ID. If the relay is connected to a gossip network with different instance ID, it responds with HTTP status code `404`.
+
+Both endpoints return decryption key protocol buffers defined under _Keypers_ encoded as hex and `0x`-prefixed.
+
+The first endpoint (without `slot` parameter) opens an SSE stream that yields items of the following format whenever the relay learns about a new decryption key:
 
 ```jsx
 event: decryption_key;
 data: data;
 ```
 
-`data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under “Keypers”.
+`data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under _Keypers_.
+
+The second endpoint takes a decimal slot number as parameter and returns the corresponding decryption key in `0x`-prefixed, hex-encoded format. If the relay does not know the key for the requested slot, it sends a response with status code `404`. The relay should be able to respond to requests for the current and the most recent slots if they observed the corresponding keys on the network. They may prune keys when they become too old or on restart.
 
 ## Encodings
 
