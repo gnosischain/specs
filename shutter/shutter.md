@@ -288,19 +288,35 @@ def hash_bytes_to_block(preimage: bytes) -> Block:
 def xor_blocks(block1: Block, block2: Block) -> Block:
     return Block(bytes(b1 ^ b2 for b1, b2 in zip(block1, block2)))
 
-def pad_and_split(b: bytes): Sequence[Block]:
+def pad_and_split(b: bytes) -> Sequence[Block]:
     # pad according to PKCS #7
     n = 32 - len(b) % 32
-    padded = b + n * b"\x00"
+    padded = b + n * bytes([n])
     return [padded[i:i + 32] for i in range(0, len(padded), 32)]
+
+def unpad_and_join(blocks: Sequence[Block]) -> bytes:
+    # unpad according to PKCS #7
+    if len(blocks) == 0:
+        return b""
+    last_block = blocks[-1]
+    n = last_block[-1]
+    assert 0 < n <= 32, "invalid padding length"
+    return b"".join(blocks)[:-n]
 
 def encode_gt(value: GT) -> bytes:
     pass  # TODO
+
+def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
+    suffix_length = max(n.bit_length() + 7) // 8, 1)
+    suffixes = [n.to_bytes(suffix_length, "big")]
+    preimages = [sigma + suffix for suffix in suffixes]
+    keys = [hash_bytes_to_block(preimage) for preimage in preimages]
+    return keys
 ```
 
-### Encryption
+### Encryption and Decryption
 
-The following code defines the function `encrypt` which encrypts a given message for a particular slot given an eon key.
+The following code defines the function `encrypt` and `decrypt`. The former encrypts a given message for a particular slot given an eon key. The latter decrypts an encrypted message using a decryption key.
 
 ```Python
 def encrypt(message: bytes, slot: int, eon_key: G2, sigma: Block) -> EncryptedMessage:
@@ -328,13 +344,22 @@ def compute_c2(sigma: Block, r: int, epoch_id: G1, eon_key: G2) -> Block:
 def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
     keys = compute_block_keys(sigma, len(message_blocks))
     return [xor_blocks(key, block) for key, block in zip(keys, blocks)]
+```
 
-def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
-    suffix_length = max(n.bit_length() + 7) // 8, 1)
-    suffixes = [n.to_bytes(suffix_length, "big")]
-    preimages = [sigma + suffix for suffix in suffixes]
-    keys = [hash_bytes_to_block(preimage) for preimage in preimages]
-    return keys
+```Python
+def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
+    sigma = recover_sigma(encrypted_message, decryption_key)
+    _, _, c3 = encrypted_message
+    keys = compute_block_keys(sigma, len(blocks))
+    decrypted_blocks = [xor_blocks(key, block) for key, block in zip(keys, blocks)]
+    return unpad_and_join(decrypted_blocks)
+
+def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Block:
+    c1, c2, _ = encrypted_message
+    p = pairing(decryption_key, c1)
+    key = hash_gt_to_block(p)
+    sigma = xor_blocks(c2, decryption_key)
+    return sigma
 ```
 
 ### Encoding
