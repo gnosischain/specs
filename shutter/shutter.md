@@ -81,8 +81,21 @@ message DecryptionKey {
 - Only present in decryption key messages:
   - `key`: The decryption key encoded as described in the _Encoding_ section.
 
+Both types of messages are wrapped in the following envelope:
+
+```jsx
+message Envelope {
+    uint32 version = 1 ;
+    google.protobuf.Any message = 2;
+}
+```
+
+- `version`: `0`, to be incremented with future incompatible protocol changes.
+- `message`: The wrapped message.
+
 Participants in the gossip network should apply the following message validation logic in order to prevent propagation of invalid messages:
 
+- Check that `version` is `0`.
 - Check that `instanceID` matches the instance ID of the connected network.
 - Check that `epochID` corresponds to the number of the next slot or the one after that.
 - Check that `eon` is equal to the keyper set index defined in the Key Broadcast Contract for the slot given by `epochID`.
@@ -377,21 +390,3 @@ def encode_encrypted_message(encrypted_message: EncryptedMessage) -> bytes:
     c1, c2, c3 = encrypted_message
     return encode_g2(c1) + c2 + b"".join(c3)
 ```
-
-## Encodings
-
-This section describes how various data types used above are canonically encoded.
-
-### P2P Messages
-
-Gossiped p2p messages are encoded as protocol buffers and are wrapped in the following envelope:
-
-```jsx
-message Envelope {
-    uint32 version = 1 ;
-    google.protobuf.Any message = 2;
-}
-```
-
-- `version`: `0`, to be incremented with future incompatible protocol changes.
-- `message`: Any of the above defined message types.
