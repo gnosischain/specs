@@ -83,8 +83,8 @@ message DecryptionKey {
 
 Participants in the gossip network should apply the following message validation logic in order to prevent propagation of invalid messages:
 
-- Check that `instanceID` is correct.
-- Check that `epochID` corresponds to the number of a slot in the near future.
+- Check that `instanceID` matches the instance ID of the connected network.
+- Check that `epochID` corresponds to the number of the next slot or the one after that.
 - Check that `eon` is equal to the keyper set index defined in the Key Broadcast Contract for the slot given by `epochID`.
 - For `DecryptionKeyShare`:
   - Check that `keyperIndex` is a valid index for the set defined in the Keyper Set Manager and identified by `eon`.
