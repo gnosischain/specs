@@ -77,9 +77,9 @@ message DecryptionKey {
 - `epochID`: The slot number of the key, in big-endian encoding (note that this field is unrelated to the epochs of the beacon chain).
 - Only present in decryption key share messages:
   - `keyperIndex`: The zero-based index of the keyper in the keyper set who generated the key share.
-  - `share`: A decryption key share encoded as described in the _Encoding_ section.
+  - `share`: A decryption key share encoded as described [below](#encoding).
 - Only present in decryption key messages:
-  - `key`: The decryption key encoded as described in the _Encoding_ section.
+  - `key`: The decryption key encoded as described [below](#encoding).
 
 Both types of messages are wrapped in the following envelope:
 
@@ -223,7 +223,7 @@ See [https://ethereum.github.io/execution-apis/api-documentation/](https://ether
 
 ## Decryption Key Relay
 
-The Decryption Key Relay allows users to listen to decryption keys without having to join the libp2p gossip network themselves. It subscribes to both the `decryptionKey` and `decryptionKeyShare` topics. It applies the filtering logic described in the Keyper-section. It relays the remaining messages to the clients that suscribed to the interface described below.
+The Decryption Key Relay allows users to listen to decryption keys without having to join the libp2p gossip network themselves. It subscribes to both the `decryptionKey` and `decryptionKeyShare` topics. It applies the filtering logic described under [Keypers](#keypers). It relays the remaining messages to the clients that suscribed to the interface described below.
 
 ### Interfaces with
 
@@ -239,7 +239,7 @@ The relay provides two HTTP GET endpoints:
 
 Both endpoints require the query parameter `instance_id`, expected to be a decimal encoded instance ID. If the relay is connected to a gossip network with different instance ID, it responds with HTTP status code `404`.
 
-Both endpoints return decryption key protocol buffers defined under _Keypers_ encoded as hex and `0x`-prefixed.
+Both endpoints return decryption key protocol buffers defined under [Keypers](#keypers) encoded as hex and `0x`-prefixed.
 
 The first endpoint (without `slot` parameter) opens an SSE stream that yields items of the following format whenever the relay learns about a new decryption key:
 
@@ -248,7 +248,7 @@ event: decryption_key;
 data: data;
 ```
 
-`data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under _Keypers_.
+`data` is the `0x`-prefixed, hex encoded decryption key protocol buffer defined under [Keypers](#keypers).
 
 The second endpoint takes a decimal slot number as parameter and returns the corresponding decryption key in `0x`-prefixed, hex-encoded format. If the relay does not know the key for the requested slot, it sends a response with status code `404`. The relay should be able to respond to requests for the current and the most recent slots if they observed the corresponding keys on the network. They may prune keys when they become too old or on restart.
 
@@ -274,14 +274,14 @@ We define the following types and constants:
 
 The following functions are considered prerequisites:
 
-| Function                       | Description                                  |
-| ------------------------------ | -------------------------------------------- |
-| keccak256(bytes) -> Block      | The keccak-256 hash function                 |
-| pairing(G1, G2) -> GT          | The BN256-defined pairing function           |
-| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar     |
-| gt_scalar_mult(GT, int)        | Multiply an element of GT by a scalar        |
-| encode_g1(G1) -> bytes         | Encode an element of G1 according to EIP-197 |
-| encode_g2(G2) -> bytes         | Encode an element of G2 according to EIP-197 |
+| Function                       | Description                                                                                     |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| keccak256(bytes) -> Block      | The keccak-256 hash function                                                                    |
+| pairing(G1, G2) -> GT          | The BN256-defined pairing function                                                              |
+| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar                                                        |
+| gt_scalar_mult(GT, int)        | Multiply an element of GT by a scalar                                                           |
+| encode_g1(G1) -> bytes         | Encode an element of G1 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
+| encode_g2(G2) -> bytes         | Encode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
 
 ### Helper Functions
 
