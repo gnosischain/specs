@@ -68,11 +68,26 @@ This section specifies the interfaces and behavior of the smart contracts in the
 
 ### Key Broadcast Contract
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+The Key Broadcast Contract is deployed at address `KEY_BROADCAST_CONTRACT_ADDRESS`. It implements the following interface:
+
+```
+interface IKeyBroadcastContract {
+    function broadcastEonKey(uint64 eon, bytes memory key) external;
+    function getEonKey(uint64 eon) external view returns (bytes memory);
+
+    event EonKeyBroadcast(uint64 eon, bytes key)
+}
+```
+
+`broadcastEonKey(eon, key)` reverts if any of the following conditions is met at the time of the call:
+
+1. The contract has already stored a key for the given eon.
+2. `key` is empty.
+3. `IKeyperSetManager(KEYPER_SET_MANAGER_MANAGER_ADDRESS).getKeyperSetAddress(eon)` reverts or returns an address different from `msg.sender`.
+
+Otherwise, it stores `key` in a way that it is indexable by `eon` and emits the event `EonKeyBroadcast(eon, key)`.
+
+`getEonKey(eon)` returns the key stored for `eon`, or an empty bytes value if no key for `eon` is stored.
 
 ### Keyper Set Manager
 
