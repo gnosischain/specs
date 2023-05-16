@@ -60,11 +60,21 @@ This section specifies the interfaces and behavior of the smart contracts in the
 
 ### Validator Registry
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+The Validator Registry is a contract deployed at address `VALIDATOR_REGISTRY_ADDRESS`. It implements the following interface:
+
+```
+interface IValidatorRegistry {
+    function register(bytes memory registrationMessage, bytes memory registrationSignature) external;
+    function deregister(bytes memory deregistrationMessage, bytes memory deregistrationSignature) external;
+
+    event Registration(bytes registrationMessage, bytes registrationSignature);
+    event Deregistration(bytes deregistrationMessage, bytes deregistrationSignature);
+}
+```
+
+`register(registrationMessage, registrationSignature)` emits the event `Registration(registrationMessage, registrationSignature)`.
+
+`deregister(deregistrationMessage, deregistrationSignature)` emits the event `Deregistration(deregistrationMessage, deregistrationSignature)`.
 
 ### Key Broadcast Contract
 
