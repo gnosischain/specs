@@ -52,11 +52,17 @@ This section specifies the interfaces and behavior of the smart contracts in the
 
 ### Sequencer
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implements the following interface:
+
+```Solidity
+interface ISequencer {
+    function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, address sender, bytes calldata encryptedTransaction, uint256 gasLimit) external;
+
+    event TransactionSubmitted(uint64 eon, bytes32 identityPrefix, address sender, uint256 gasLimit);
+}
+```
+
+`submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, msg.sender, identityPrefix, gasLimit)`.
 
 ### Validator Registry
 
