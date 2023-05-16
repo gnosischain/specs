@@ -142,11 +142,25 @@ Then, there are `n` eons `e_i` starting at slot `s_i` (inclusive). Eon `e_i` for
 
 ### Keyper Set Contract
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+Keyper set contracts are contracts which fulfill the following interface:
+
+```
+interface IKeyperSet {
+    function isFinalized() external view returns (bool);
+    function getNumMembers() external view returns (uint64);
+    function getMember(uint64 index) external view returns (address);
+    function getMembers() external view returns (address[] memory);
+    function getThreshold() external view returns (uint64);
+}
+```
+
+If `isFinalized` returns `false`, the behavior of the contract is unspecified. If `isFinalized()` returns `true`:
+
+- `getNumMembers()` returns a number `n` that is greater than or equal to `1`.
+- `getMembers()` returns an array of `n` non-zero addresses.
+- `getMember(i)` returns `getMembers()[i]` for `0 <= i < n` and the zero address for `i >= n`.
+- `getThreshold()` returns a number `t` with `1 <= t <= n`.
+- The return values of `isFinalized`, `getNumMembers`, `getMember`, `getMembers`, and `getThreshold` will not change in the future.
 
 ## Cryptography
 
