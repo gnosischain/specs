@@ -101,11 +101,44 @@ Otherwise, it stores `key` in a way that it is indexable by `eon` and emits the 
 
 ### Keyper Set Manager
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+The Keyper Set Manager is a contract deployed at address `KEYPER_SET_MANAGER_ADDRESS`. It implements the following interface:
+
+```
+interface IKeyperSetManager {
+    function addKeyperSet(uint64 activationSlot, address keyperSetContract) external;
+    function getNumKeyperSets() external view returns (uint64);
+    function getKeyperSetIndexBySlot(uint64 slot) external view returns (address, uint64);
+    function getKeyperSetAddress(uint64 index) external view returns (address, uint64);
+    function getKeyperSetActivationSlot(uint64 index) external view returns (uint64);
+
+    event KeyperSetAdded(uint64 activationSlot, address keyperSetContract);
+}
+```
+
+In addition, the contract implements the [Contract Ownership Standard (ERC-173)](https://eips.ethereum.org/EIPS/eip-173).
+
+`addKeyperSet(activationSlot, keyperSetContract)` reverts if any one of the following conditions is met at the time of the call:
+
+1. `msg.sender != owner()`
+2. `getNumKeyperSets() > 0 && activationSlot < getKeyperSetActivationSlot(getNumKeyperSets() - 1)`
+
+Otherwise, `addKeyperSet` saves `keyperSetContract` and the corresponding `activationSlot` to storage. Finally, it emits the event `KeyperSetAdded(activationSlot, keyperSetContract)`.
+
+Define
+
+- `n` as the number of added keyper sets,
+- `k_0 ... k_(n - 1)` as the keyper sets in the order they were added, and
+- `s_0 ... s_(n - 1)` as the corresponding activation slot numbers.
+
+Then, there are `n` eons `e_i` starting at slot `s_i` (inclusive). Eon `e_i` for `i = 0 ... n - 2` ends at slot `s_(i + 1)` (exclusive), eon `e_(n - 1)` is tentatively open ended. The keyper set for any slot in `e_i` is `k_i`.
+
+`getNumKeyperSets()` returns `n`.
+
+`getKeyperSetIndexBySlot(s)` reverts if `n == 0` or `s < s_0`. Otherwise, it returns `k_i` where `i` is the index of the eon that contains slot `s`.
+
+`getKeyperSetAddress(i)` reverts if `i >= n`. Otherwise, it returns `k_i`.
+
+`getKeyperSetActivationSlot(i)` reverts if `i >= n`. Otherwise, it returns `s_i`.
 
 ### Keyper Set Contract
 
