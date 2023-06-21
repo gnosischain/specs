@@ -28,7 +28,7 @@ This EIP has been adapted for Gnosis. More details in [`/execution/withdrawals.m
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
 | Chiado  | `1684934220` | May 24 2023 13:17:00 GMT+0000 | -         | 244224             |
-| Mainnet | -            | -                             | -         | -                  |
+| Mainnet | `1690889660` | Aug 01 2023 11:34:20 GMT+0000 | -         | 648704             |
 
 ### Implementation Progresss
 
