@@ -601,8 +601,26 @@ def hash_gt_to_block(preimage: GT) -> Block:
 def hash_bytes_to_block(preimage: bytes) -> Block:
     return keccak256(preimage)
 
-def encode_gt(value: GT) -> bytes:
-    pass  # TODO
+def encode_gt(v: GT) -> bytes:
+    # elements from GT decompose into two elements x and y from the sixth-degree extension field GF(P^6)
+    # elements from GF(P^6) decompose into three elements x, y, and z from the second-degree extension field GF(P^2)
+    # elements from GF(P^2) decompose into two elements x and y from the finite field GF(P)
+    # GF(P) is the Galois field of order ORDER, called F_p in EIPs 196 and 197, consisting of integers modulo ORDER.
+    ints: Sequence[int] = [
+        v.x.x.x,
+        v.x.x.y,
+        v.x.y.x,
+        v.x.y.y,
+        v.x.z.x,
+        v.x.z.y,
+        v.y.x.x,
+        v.y.x.y,
+        v.y.y.x,
+        v.y.y.y,
+        v.y.z.x,
+        v.y.z.y,
+    ]
+    return b"".join([i.to_bytes(32, "big") for i in ints])
 
 def xor_blocks(block1: Block, block2: Block) -> Block:
     return Block(bytes(b1 ^ b2 for b1, b2 in zip(block1, block2)))
