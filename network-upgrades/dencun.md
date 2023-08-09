@@ -7,14 +7,22 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 | EIP |   |
 | --- | - |
 | [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153): Transient storage opcodes             | Not modified
-| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM          | Not modified
-| [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions               | Constants modified from Ethereum (* )
+| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM          | Constants maybe modified from Ethereum (* )
+| [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions               | Constants maybe modified from Ethereum (* )
 | [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction    | Not modified
 | [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction | Not modified
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
 ## Differences with Ethereum mainnet
+
+### [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
+
+The ring buffer data-structure is sized to expose at least a root that's 98304 seconds (1 day) old. This value is computed assuming 12 seconds per slot. Since Gnosis chain has faster slot times with 5 seconds per slot, this constants may have to be adjusted. Not changing the constant would increase the upper bound of roots stored in the contract, while exposing roots of the same age.
+
+| Constant | Value |
+| -------- | ----- |
+| HISTORICAL_ROOTS_MODULUS | TBD |
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 
