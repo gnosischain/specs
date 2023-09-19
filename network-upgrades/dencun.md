@@ -11,6 +11,8 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 | [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions               | Constants maybe modified from Ethereum (* )
 | [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction    | Not modified
 | [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction | Not modified
+| [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514): Add Max Epoch Churn Limit             | Constants maybe modified from Ethereum (* )
+| [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516): BLOBBASEFEE opcode                    | Not modified
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
@@ -35,6 +37,14 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 | MIN_BLOB_GASPRICE | TBD |
 | TARGET_BLOB_GAS_PER_BLOCK | TBD |
 | MAX_BLOB_GAS_PER_BLOCK | TBD |
+
+### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
+
+Gnosis chain has a custom `CHURN_LIMIT_QUOTIENT` config value, thus it should use a custom max churn limit.
+
+| Constant | Value |
+| -------- | ----- |
+| MAX_PER_EPOCH_CHURN_LIMIT | TBD |
 
 ## Upgrade Schedule
 
