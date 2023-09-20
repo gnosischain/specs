@@ -56,7 +56,7 @@ message KeyShare {
 }
 ```
 
-```Python
+```python
 def make_decryption_key_shares_message(
     eon: uint64,
     slot: uint64,
@@ -277,7 +277,7 @@ This section specifies the interfaces and behavior of the smart contracts in the
 
 The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implements the following interface:
 
-```Solidity
+```solidity
 interface ISequencer {
     function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, address sender, bytes memory encryptedTransaction, uint256 gasLimit) external;
     function submitDecryptionProgress(bytes memory message) external;
@@ -293,7 +293,7 @@ interface ISequencer {
 
 The constant `ENCRYPTED_GAS_LIMIT` defines how much gas is earmarked for encrypted transactions. The function `get_next_transactions` retrieves a set of transactions from the queue:
 
-```Python
+```python
 import dataclasses
 
 @dataclasses.dataclass
@@ -331,7 +331,7 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
 
 The Validator Registry is a contract deployed at address `VALIDATOR_REGISTRY_ADDRESS`. It implements the following interface:
 
-```
+```solidity
 interface IValidatorRegistry {
     function register(bytes memory registrationMessage, bytes memory registrationSignature) external;
     function deregister(bytes memory deregistrationMessage, bytes memory deregistrationSignature) external;
@@ -347,7 +347,7 @@ interface IValidatorRegistry {
 
 In order to announce their intent to start or stop participating in the protocol, validators call `register(message, signature)` or `deregister(message, signature)`, respectively. `message` is computed by `compute_registration_message` or `compute_deregistration_message`, respectively:
 
-```Python
+```python
 def compute_registration_message(validator_index: uint64, nonce: uint64):
     return compute_registry_message_prefix(validator_index, nonce) + b"\x01"
 
@@ -368,7 +368,7 @@ The parameters are as follows:
 
 The list of indices of all participating validators is `get_participating_validators(state)` given the beacon chain state `state`:
 
-```Python
+```python
 def get_participating_validators(state) -> Sequence[ValidatorIndex]:
     indices = set()
     prev_nonces = {}
@@ -458,7 +458,7 @@ def get_events(state, address):
 
 The Key Broadcast Contract is deployed at address `KEY_BROADCAST_CONTRACT_ADDRESS`. It implements the following interface:
 
-```
+```solidity
 interface IKeyBroadcastContract {
     function broadcastEonKey(uint64 eon, bytes memory key) external;
     function getEonKey(uint64 eon) external view returns (bytes memory);
@@ -481,7 +481,7 @@ Otherwise, it stores `key` in a way that it is indexable by `eon` and emits the 
 
 The Keyper Set Manager is a contract deployed at address `KEYPER_SET_MANAGER_ADDRESS`. It implements the following interface:
 
-```
+```solidity
 interface IKeyperSetManager {
     function addKeyperSet(uint64 activationSlot, address keyperSetContract) external;
     function getNumKeyperSets() external view returns (uint64);
@@ -522,7 +522,7 @@ Then, there are `n` eons `e_i` starting at slot `s_i` (inclusive). Eon `e_i` for
 
 Keyper set contracts are contracts which fulfill the following interface:
 
-```
+```solidity
 interface IKeyperSet {
     function isFinalized() external view returns (bool);
     function getNumMembers() external view returns (uint64);
@@ -579,7 +579,7 @@ The following functions are considered prerequisites:
 
 ### Helper Functions
 
-```Python
+```python
 def hash_block_to_int(block: Block) -> int:
     h = keccak256(block)
     i = int.from_bytes(h, "big")
@@ -647,7 +647,7 @@ def invert(x: int) -> int:
 
 ### Key Generation
 
-```Python
+```python
 def compute_decryption_key_share(eon_secret_key_share: int, identity: G1) -> G1:
     return g1_scalar_mult(identity, eon_secret_key_share)
 
@@ -666,7 +666,7 @@ def compute_decryption_key(keyper_indices: Sequence[int], shares: Sequence[G1]) 
 
 ### Encryption and Decryption
 
-```Python
+```python
 def encrypt(message: bytes, identity: G1, eon_key: G2, sigma: Block) -> EncryptedMessage:
     message_blocks = pad_and_split(message)
     r = compute_r(sigma)
@@ -698,7 +698,7 @@ def compute_identity(prefix: bytes, sender: bytes) -> G1:
     return g1_scalar_base_mult(i)
 ```
 
-```Python
+```python
 def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
     sigma = recover_sigma(encrypted_message, decryption_key)
     _, _, c3 = encrypted_message
@@ -716,7 +716,7 @@ def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Bl
 
 ### Validation
 
-```Python
+```python
 import secrets
 
 def check_decryption_key_share(decryption_key_share: G1, eon_public_key_share: G2, identity: G1) -> bool:
@@ -735,7 +735,7 @@ def check_decryption_key(decryption_key: G1, eon_public_key: G2, identity: G1) -
 
 ### Encoding
 
-```Python
+```python
 def encode_decryption_key(decryption_key: G1) -> bytes:
     return encode_g1(decryption_key)
 
