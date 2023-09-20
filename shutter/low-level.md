@@ -62,7 +62,7 @@ def make_decryption_key_shares_message(
     slot: uint64,
     keyper_index: uint64,
     tx_pointer: uint64,
-    txs: Sequence[SubmittedTransaction],
+    txs: Sequence[SequencedTransaction],
     eon_secret_key_share: int,
     keyper_private_key: ECDSAPrivkey,
 ) -> DecryptionKeyShares:
@@ -79,11 +79,11 @@ def make_decryption_key_shares_message(
     signature = compute_slot_decryption_identities_signature(
         instance_id=INSTANCE_ID,
         eon=eon,
-        slot=slot
+        slot=slot,
         identities=[tx.identity for tx in txs],
         keyper_private_key=keyper_private_key,
     )
-    return Shares(
+    return DecryptionKeyShares(
         instanceID=INSTANCE_ID,
         eon=eon,
         keyperIndex=keyper_index,
@@ -119,7 +119,7 @@ def check_decryption_key_shares_message(
     if not all(
         check_decryption_key_share(
             share.share,
-            eon_public_key_shares[shares.keyperIndex],
+            eon_public_key_shares[key_shares_message.keyperIndex],
             share.identity,
         ) for share in key_shares_message.shares
     ):
@@ -129,7 +129,8 @@ def check_decryption_key_shares_message(
         instance_id=key_shares_message.instanceID,
         eon=key_shares_message.eon,
         slot=key_shares_message.slot,
-        identities=[share.identity for share in key_shares_message.shares]
+        identities=[share.identity for share in key_shares_message.shares],
+        signature=key_shares_message.signature,
         keyper_address=keypers[key_shares_message.keyperIndex],
     )
 ```
@@ -157,13 +158,18 @@ message Key {
 def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> DecryptionKeys:
     keyper_indices = [m.keyperIndex for m in share_messages]
     identities = [share.identity for share in share_messages[0].shares]
-    keys = [
+    raw_keys = [
         compute_decryption_key(
             keyper_indices,
-            [m.shares[key_index] for m in share_messages],
+            [m.shares[key_index].share for m in share_messages],
         )
         for key_index, identity in enumerate(identities)
     ]
+    keys = [
+        Key(identity=identity, key=raw_key)
+        for identity, raw_key in zip(identities, raw_keys)
+    ]
+
 
     signer_indices_and_signatures = sorted([
         (m.keyperIndex, m.signature) for m in share_messages
@@ -196,7 +202,7 @@ If a message `keys_message` is not valid according to `check_decryption_keys_mes
 
 ```python
 def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, threshold: uint64) -> bool:
-    if keys_message.instance_id != INSTANCE_ID or keys_message.eon != eon:
+    if keys_message.instanceID != INSTANCE_ID or keys_message.eon != eon:
         return False
 
     if not all(
@@ -414,7 +420,7 @@ def get_participating_validators(state) -> Sequence[ValidatorIndex]:
             continue
 
         validator_pubkey = state.validators[validator_index].pubkey
-        if !bls.Verify(validator_pubkey, keccak256(message), signature):
+        if not bls.Verify(validator_pubkey, keccak256(message), signature):
             continue
 
         prev_nonces[validator_index] = nonce
@@ -425,13 +431,13 @@ def get_participating_validators(state) -> Sequence[ValidatorIndex]:
 
     return sorted(indices)
 
-def extract_message_parts(message: bytes) -> Tuple[bytes, uint64, Address, uint64, uint64, bool]:
+def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint64, uint64, bool]:
     suffix = message[-1:]
     is_registration = bool(int.from_bytes(suffix, "big"))
 
     prefix = message[:-1]
     assert len(prefix) == 1 + 8 + 20 + 8 + 8
-    version = prefix[0]
+    version = prefix[0:1]
     chain_id_bytes = prefix[1:9]
     registry_address = prefix[9:29]
     index_bytes = prefix[29:37]
@@ -443,14 +449,16 @@ def extract_message_parts(message: bytes) -> Tuple[bytes, uint64, Address, uint6
 
     return version, chain_id, registry_address, index, nonce, is_registration
 
-def get_events(state, address):
+@dataclasses.dataclass
+class Event:
+    name: str
+    args: Any  # an object with attributes according to the event type
+
+def get_events(state: BeaconState, address: Address) -> Sequence[Event]:
     """Return a list of events emitted by the contract at `address` according to `state`.
 
-    The list is in the order in which the events were emitted. Each event is represented by an
-    object with the following properties:
-    - `name`: The name of the emitted event.
-    - `args`: The arguments of the event.
-    """"
+    The list is in the order in which the events were emitted.
+    """
     pass
 ```
 
@@ -572,7 +580,7 @@ The following functions are considered prerequisites:
 | g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar                                                           |
 | g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar                                                        |
 | g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar                                                        |
-| gt_scalar_mult(GT, int)        | Multiply an element of GT by a scalar                                                           |
+| gt_scalar_mult(GT, int) -> GT  | Multiply an element of GT by a scalar                                                           |
 | encode_g1(G1) -> bytes         | Encode an element of G1 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
 | encode_g2(G2) -> bytes         | Encode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
 | decode_g2(bytes) -> G2         | Decode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
@@ -614,7 +622,7 @@ def unpad_and_join(blocks: Sequence[Block]) -> bytes:
     return b"".join(blocks)[:-n]
 
 def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
-    suffix_length = max(n.bit_length() + 7) // 8, 1)
+    suffix_length = max((n.bit_length() + 7) // 8, 1)
     suffixes = [n.to_bytes(suffix_length, "big")]
     preimages = [sigma + suffix for suffix in suffixes]
     keys = [hash_bytes_to_block(preimage) for preimage in preimages]
@@ -690,7 +698,7 @@ def compute_c2(sigma: Block, r: int, identity: G1, eon_key: G2) -> Block:
 
 def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
     keys = compute_block_keys(sigma, len(message_blocks))
-    return [xor_blocks(key, block) for key, block in zip(keys, blocks)]
+    return [xor_blocks(key, block) for key, block in zip(keys, message_blocks)]
 
 def compute_identity(prefix: bytes, sender: bytes) -> G1:
     h = keccak256(prefix + sender)
@@ -701,7 +709,7 @@ def compute_identity(prefix: bytes, sender: bytes) -> G1:
 ```python
 def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
     sigma = recover_sigma(encrypted_message, decryption_key)
-    _, _, c3 = encrypted_message
+    _, _, blocks = encrypted_message
     keys = compute_block_keys(sigma, len(blocks))
     decrypted_blocks = [xor_blocks(key, block) for key, block in zip(keys, blocks)]
     return unpad_and_join(decrypted_blocks)
@@ -710,7 +718,7 @@ def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Bl
     c1, c2, _ = encrypted_message
     p = pairing(decryption_key, c1)
     key = hash_gt_to_block(p)
-    sigma = xor_blocks(c2, decryption_key)
+    sigma = xor_blocks(c2, key)
     return sigma
 ```
 
@@ -740,7 +748,7 @@ def encode_decryption_key(decryption_key: G1) -> bytes:
     return encode_g1(decryption_key)
 
 def encode_decryption_key_share(decryption_key_share: G1) -> bytes:
-    return encode_g1(k)
+    return encode_g1(decryption_key_share)
 
 def encode_encrypted_message(encrypted_message: EncryptedMessage) -> bytes:
     c1, c2, c3 = encrypted_message
