@@ -6,6 +6,7 @@
 - [ ] POSDAO
 - [ ] POSDAO post-merge
 - [Withdrawals](./execution/withdrawals.md)
+- [devp2p](./execution/eth.md)
 - [Shutter](./shutter/high-level.md)
 
 ## Network upgrades
