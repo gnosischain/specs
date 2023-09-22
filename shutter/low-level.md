@@ -261,11 +261,24 @@ Transactions `txs[j]` for `j >= 1` are a subset of `decrypted_transactions`. The
 
 ### Encrypting RPC Server
 
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
+The Encrypting RPC Server is an HTTP server that exposes a modified version of the Ethereum JSON RPC protocol as defined [here](https://ethereum.github.io/execution-apis/api-documentation/). It implements all methods from the `eth` namespace as specified, except for `eth_sendRawTransaction`. It may optionally implement any other method.
+
+The server is configurable with the following values:
+
+- an ECDSA private key `private_key` corresponding to address `address`
+- a non-negative integer `keyper_set_change_lookahead`
+
+#### eth_sendRawTransaction
+
+The server exposes a method `eth_sendRawTransaction` that behaves differently to the standard. It takes a hex encoded, `0x` prefixed string `h` as its sole parameter. If not exactly one parameter is provided, the server responds with an error with code `-32602`. If `h` is not the hex encoding of a byte string `b` or `b` is not the RLP encoding of a valid transaction `tx`, it returns an error with code `-32602`.
+
+If the sender of `tx` has insufficient funds to pay the transaction fee or if the sender's nonce does not match the account nonce, the server responds with an error with code `-32000`.
+
+Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(s + keyper_set_change_lookahead)` where `s` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix, address)`.
+
+Finally, the server creates a transaction `submit_tx` which calls `ISequencer(SEQUENCER_ADDRESS).submitEncryptedTransaction(eon, identity_prefix, address, encryptedTransaction, tx.gasLimit)`, sets gas limit and nonce as needed and chooses gas price parameters appropriate to the current network conditions. If the account identified by `address`has insufficient funds, it returns an error with code`-32603`. Otherwise, it signs `submit_tx` with `private_key`, broadcasts it to the network, and returns the hex encoded hash of `tx` to the user.
+
+The server may rate limit calls to `eth_sendRawTransaction` based on the sender of `tx` as well as the originating IP address, in which case it responds with an error with code `-32005`.
 
 ## Smart Contracts
 
