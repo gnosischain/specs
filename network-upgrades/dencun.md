@@ -31,11 +31,11 @@ The ring buffer data-structure is sized to expose roots at most `8191 * SECONDS_
 
 Gnosis chain has slots significantly faster than Ethereum. Bigger blocks _could_ have a higher cost to the network than Ethereum so we may price blobs differently. Ethereum mainnet has chosen a target of 3 blobs from real live experiments on mainnet with big blocks. Consecuently this parameters may not be adecuate.
 
-Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a concern. Ethereum's `MIN_BLOB_GASPRICE` makes blob space free (1e-18 USD / blob) if usage is under the target for a sustained period of time. The same concern applies to Ethereum, but consensus is that choosing a specific value that may apply to only some market conditions and not others. Gnosis however has chosen a min gas price of 1 GWei, so a similar decision can be made here. 
+Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a concern. Ethereum's `MIN_BLOB_GASPRICE` makes blob space free (1e-18 USD / blob) if usage is under the target for a sustained period of time. The same concern applies to Ethereum, but consensus is that choosing a specific value that may apply to only some market conditions and not others. Given that Gnosis native token is a stable coin, this concerns are mitigated. Given usage under target for regular txs and blob data, setting min blob gas price to 1 GWei reduces the cost per byte by a factor of 16.
 
 | Constant | Value |
 | -------- | ----- |
-| MIN_BLOB_GASPRICE | TBD |
+| MIN_BLOB_GASPRICE | 1000000000 |
 | TARGET_BLOB_GAS_PER_BLOCK | TBD |
 | MAX_BLOB_GAS_PER_BLOCK | TBD |
 
