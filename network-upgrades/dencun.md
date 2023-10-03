@@ -20,11 +20,11 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 
 ### [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
 
-The ring buffer data-structure is sized to expose roots at most `8191 * SECONDS_PER_SLOT` seconds old. The value of `8191` is chosen to approximate ~1 day of seconds (assuming `SECONDS_PER_SLOT` = 12), and should be a prime number (see section 6.2 of [ChainSecurity audit](https://chainsecurity.com/wp-content/uploads/2023/09/ChainSecurity_Ethereum_Foundation_EIP-4788_Contract_Audit.pdf) for reasoning). Not changing the value of `HISTORICAL_ROOTS_MODULUS` would reduce the maximum age of the retrievable beacon block roots from 1.14 days to 0.47 days.
+The ring buffer data-structure is sized to expose roots at most one day old (8191 in Ethereum's case of `SECONDS_PER_SLOT` = 12). Applications consuming this feature may rely on roots being available for at least day, allowing more infrequent update operations. The value `HISTORICAL_ROOTS_MODULUS` is increased in Gnosis to the next prime after `12/5 * 8191` (see section 6.2 of [ChainSecurity audit](https://chainsecurity.com/wp-content/uploads/2023/09/ChainSecurity_Ethereum_Foundation_EIP-4788_Contract_Audit.pdf) for reasoning).
 
 | Constant | Value |
 | -------- | ----- |
-| HISTORICAL_ROOTS_MODULUS | TBD |
+| HISTORICAL_ROOTS_MODULUS | 19661 |
 | BEACON_ROOTS_ADDRESS | TBD |
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
