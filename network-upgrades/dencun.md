@@ -25,6 +25,7 @@ The ring buffer data-structure is sized to expose at least a root that's 98304 s
 | Constant | Value |
 | -------- | ----- |
 | HISTORICAL_ROOTS_MODULUS | TBD |
+| BEACON_ROOTS_ADDRESS | TBD |
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 
