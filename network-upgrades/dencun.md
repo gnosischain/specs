@@ -20,7 +20,7 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 
 ### [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
 
-The ring buffer data-structure is sized to expose at least a root that's 98304 seconds (1 day) old. This value is computed assuming 12 seconds per slot. Since Gnosis chain has faster slot times with 5 seconds per slot, this constants may have to be adjusted. Not changing the constant would increase the upper bound of roots stored in the contract, while exposing roots of the same age.
+The ring buffer data-structure is sized to expose roots at most `8191 * SECONDS_PER_SLOT` seconds old. The value of `8191` is chosen to approximate ~1 day of seconds (assuming `SECONDS_PER_SLOT` = 12), and should be a prime number (see section 6.2 of [ChainSecurity audit](https://chainsecurity.com/wp-content/uploads/2023/09/ChainSecurity_Ethereum_Foundation_EIP-4788_Contract_Audit.pdf) for reasoning). Gnosis chain has a lower `SECONDS_PER_SLOT` value of 5. The contract logic will works exactly as expected but it will only allow to retrieve roots that are at most 0.47 days old.
 
 | Constant | Value |
 | -------- | ----- |
