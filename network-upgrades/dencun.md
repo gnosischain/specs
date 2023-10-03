@@ -41,11 +41,16 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 
-Gnosis chain has a custom `CHURN_LIMIT_QUOTIENT` config value, thus it should use a custom max churn limit.
+Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `MAX_PER_EPOCH_CHURN_LIMIT` value of 2 provides a good trade-off to:
+- Limit max state growth in the next year to 1M validators
+- Increase the minimum time for a 2/3 malicious take-over to 150 days at current validator set sizes
+- Allow validator set growth to prevent long queues unless there's exceptional demand 
+
+See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 
 | Constant | Value |
 | -------- | ----- |
-| MAX_PER_EPOCH_CHURN_LIMIT | TBD |
+| MAX_PER_EPOCH_CHURN_LIMIT | 2 |
 
 ## Upgrade Schedule
 
