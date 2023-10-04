@@ -7,7 +7,7 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 | EIP |   |
 | --- | - |
 | [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153): Transient storage opcodes             | Not modified
-| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM          | Constants maybe modified from Ethereum (* )
+| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM          | Not modified, same addresses as Ethereum
 | [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions               | Constants maybe modified from Ethereum (* )
 | [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction    | Not modified
 | [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction | Not modified
@@ -17,15 +17,6 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
 ## Differences with Ethereum mainnet
-
-### [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
-
-The ring buffer data-structure is sized to expose roots at most `8191 * SECONDS_PER_SLOT` seconds old. The value of `8191` is chosen to approximate ~1 day of seconds (assuming `SECONDS_PER_SLOT` = 12), and should be a prime number (see section 6.2 of [ChainSecurity audit](https://chainsecurity.com/wp-content/uploads/2023/09/ChainSecurity_Ethereum_Foundation_EIP-4788_Contract_Audit.pdf) for reasoning). Gnosis chain has a lower `SECONDS_PER_SLOT` value of 5. The contract logic will works exactly as expected but it will only allow to retrieve roots that are at most 0.47 days old.
-
-| Constant | Value |
-| -------- | ----- |
-| HISTORICAL_ROOTS_MODULUS | 8191 |
-| BEACON_ROOTS_ADDRESS | TBD |
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 
