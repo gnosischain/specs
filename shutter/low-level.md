@@ -331,6 +331,18 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
         txs.append(tx)
         total_gas += event.args.gasLimit
     return txs
+
+@dataclasses.dataclass
+class Event:
+    name: str
+    args: Any  # an object with attributes according to the event type
+
+def get_events(state: BeaconState, address: Address) -> Sequence[Event]:
+    """Return a list of events emitted by the contract at `address` according to `state`.
+
+    The list is in the order in which the events were emitted.
+    """
+    pass
 ```
 
 ### Validator Registry
@@ -443,18 +455,6 @@ def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint6
     nonce = int.from_bytes(nonce_bytes, "big")
 
     return version, chain_id, registry_address, index, nonce, is_registration
-
-@dataclasses.dataclass
-class Event:
-    name: str
-    args: Any  # an object with attributes according to the event type
-
-def get_events(state: BeaconState, address: Address) -> Sequence[Event]:
-    """Return a list of events emitted by the contract at `address` according to `state`.
-
-    The list is in the order in which the events were emitted.
-    """
-    pass
 ```
 
 ### Key Broadcast Contract
