@@ -339,19 +339,26 @@ The Validator Registry is a contract deployed at address `VALIDATOR_REGISTRY_ADD
 
 ```solidity
 interface IValidatorRegistry {
-    function register(bytes memory registrationMessage, bytes memory registrationSignature) external;
-    function deregister(bytes memory deregistrationMessage, bytes memory deregistrationSignature) external;
+    struct Update {
+        bytes message;
+        bytes signature;
+    }
 
-    event Registration(bytes registrationMessage, bytes registrationSignature);
-    event Deregistration(bytes deregistrationMessage, bytes deregistrationSignature);
+    function getNumUpdates() external view returns (uint256);
+    function getUpdate(uint256 i) external view returns (Update memory);
+
+    function update(
+        bytes memory message,
+        bytes memory signature
+    ) external;
+
+    event Updated(bytes message, bytes signature);
 }
 ```
 
-`register(registrationMessage, registrationSignature)` emits the event `Registration(registrationMessage, registrationSignature)`.
+The contract maintains a zero-indexed sequence of `Update`s. `getNumUpdates()` returns the length of the sequence `n`, `getUpdate(i)` returns the `i`th element if `i < n` and reverts otherwise. The sequence is initially empty. `update(message, signature)` appends the element `Update(message, signature)`. It also emits the event `Updated(message, signature)`.
 
-`deregister(deregistrationMessage, deregistrationSignature)` emits the event `Deregistration(deregistrationMessage, deregistrationSignature)`.
-
-In order to announce their intent to start or stop participating in the protocol, validators call `register(message, signature)` or `deregister(message, signature)`, respectively. `message` is computed by `compute_registration_message` or `compute_deregistration_message`, respectively:
+Validators are expected to announce their intent to start or stop participating in the protocol by calling `update(message, signature)`. `message` is computed by `compute_registration_message` or `compute_deregistration_message`, respectively:
 
 ```python
 def compute_registration_message(validator_index: uint64, nonce: uint64):
@@ -376,22 +383,13 @@ The list of indices of all participating validators is `get_participating_valida
 
 ```python
 def get_participating_validators(state) -> Sequence[ValidatorIndex]:
+    registry = IValidatorRegistry(VALIDATOR_REGISTRY_ADDRESS)
     indices = set()
     prev_nonces = {}
 
-    events = get_events(state, VALIDATOR_REGISTRY_ADDRESS)
-    for event in events:
-        if event.name == "Registration":
-            is_registration_event = True
-            message = event.args.registrationMessage
-            signature = event.args.registrationSignature
-        elif event.name == "Deregistration":
-            is_registration_event = False
-            message = event.args.deregistrationMessage
-            signature = event.args.deregistrationSignature
-        else:
-            assert False
-
+    n = registry.getNumUpdates()
+    updates = [registry.getUpdate(i) for i in range(n)]
+    for update in updates:
         try:
             (
                 version,
@@ -400,11 +398,8 @@ def get_participating_validators(state) -> Sequence[ValidatorIndex]:
                 validator_index,
                 nonce,
                 is_registration,
-            ) = extract_message_parts(event.args.message)
+            ) = extract_message_parts(update.message)
         except:
-            continue
-
-        if is_registration_event != is_registration:
             continue
 
         if version != VALIDATOR_REGISTRY_MESSAGE_VERSION:
