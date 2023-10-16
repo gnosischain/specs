@@ -29,6 +29,7 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 | MIN_BLOB_GASPRICE | 1000000000 |
 | TARGET_BLOB_GAS_PER_BLOCK | 131072 |
 | MAX_BLOB_GAS_PER_BLOCK | 262144 |
+| BLOB_GASPRICE_UPDATE_FRACTION | 1112826 |
 
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 
