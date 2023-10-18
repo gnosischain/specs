@@ -35,7 +35,7 @@ At the beginning of each slot `s`, the keyper checks if `keyper_address` is an e
 
 Otherwise, they check if the block proposer of slot `s` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend slot processing until the start of the next slot.
 
-Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of eon `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
+Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
 
 Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, s, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
 
@@ -245,7 +245,7 @@ Registered validators subscribe to `DecryptionKeys` messages from keypers on the
 
 If a registered validator is selected as the block proposer for slot `s`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == s`. If no such message is received up until the end of `s`, the proposer proposes no block.
 
-Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `e` from the sequencer contract that, for any `k` in `keys_message.keys`, fulfill
+Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `e` from the sequencer contract that, for any `k` in `keys_message.keys`, fulfill.
 
 - `e.args.eon == keys_message.eon` and
 - `compute_identity(e.args.identityPrefix, keys_message.sender) == k.identity`.
@@ -391,7 +391,7 @@ The parameters are as follows:
 
 `signature = bls.Sign(validator_privkey, keccak256(message))` where `validator_privkey` is the private key of the validator.
 
-The list of indices of all participating validators is `get_participating_validators(state)` given the beacon chain state `state`:
+The list of indices of all participating validators is `get_participating_validators(state)` given the beacon chain `state`:
 
 ```python
 def get_participating_validators(state) -> Sequence[ValidatorIndex]:
