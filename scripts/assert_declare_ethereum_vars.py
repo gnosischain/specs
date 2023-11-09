@@ -3,6 +3,8 @@ import yaml
 import sys
 import argparse
 import difflib
+import re
+import json
 
 # Install dependecies:
 #
@@ -12,16 +14,13 @@ import difflib
 # 
 # python3 scripts/assert_declare_ethereum_vars.py
 
-# Default commit for the pinned version
-DEFAULT_COMMIT = 'v1.4.0-beta.4'
-
 # URL of the YAML file in the GitHub repo
 # 'https://raw.githubusercontent.com/ethereum/consensus-specs/dev/configs/mainnet.yaml'
-remote_base_url = 'https://raw.githubusercontent.com/ethereum/consensus-specs'
+REMOTE_BASE_URL = 'https://raw.githubusercontent.com/ethereum/consensus-specs'
 
 # Path to the local YAML file
-files = [
-    # local file           # remote url path
+FILES = [
+     # local file                    # remote url path
     ('consensus/config/gnosis.yaml', 'configs/mainnet.yaml'),
     ('consensus/preset/gnosis/phase0.yaml', 'presets/mainnet/phase0.yaml'),
     ('consensus/preset/gnosis/altair.yaml', 'presets/mainnet/altair.yaml'),
@@ -30,14 +29,37 @@ files = [
     ('consensus/preset/gnosis/deneb.yaml', 'presets/mainnet/deneb.yaml'),
 ]
 
-def load_yaml_from_github(url):
+ETHEREUM_SPEC_COMMIT_PREFIX = "ETHEREUM_SPEC_COMMIT: "
+CONSENSUS_SPEC_FILEPATH = "consensus.md"
+
+# Keys to ignore for the config / preset diff tables
+IGNORE_CONFIG_KEYS = [
+    '_FORK_EPOCH',
+    '_FORK_VERSION',
+    'MIN_GENESIS_TIME',
+    'MIN_GENESIS_ACTIVE_VALIDATOR_COUNT',
+    'GENESIS_DELAY',
+    'CONFIG_NAME',
+    'DEPOSIT_CONTRACT_ADDRESS',
+    'DEPOSIT_CHAIN_ID',
+    'DEPOSIT_NETWORK_ID',
+]
+IGNORE_CONFIG_KEYS_REGEX = [re.compile(pattern) for pattern in IGNORE_CONFIG_KEYS]
+
+def read_default_commit_from_md(file_path):
+    with open(file_path, 'r') as file:
+        for line in file:
+            if line.startswith(ETHEREUM_SPEC_COMMIT_PREFIX):
+                return line[len(ETHEREUM_SPEC_COMMIT_PREFIX):].strip()
+
+def load_str_from_github(url):
     with urllib.request.urlopen(url) as response:
         if response.status == 200:
             return response.read().decode('utf-8')
         else:
             raise Exception("Failed to download file from GitHub")
 
-def load_yaml_from_local(path):
+def load_str_from_local(path):
     with open(path, 'r') as file:
         return file.read()
 
@@ -53,16 +75,68 @@ def compare_yaml_keys(github_yaml, local_yaml):
 
     return new_keys, missing_keys
 
+def assert_deep_equal_dict(a, b, id):
+    try:
+        assert a == b
+    except AssertionError:
+        a_str = json.dumps(a, indent=4, sort_keys=True)
+        b_str = json.dumps(b, indent=4, sort_keys=True)
+        diff = difflib.ndiff(a_str.splitlines(), b_str.splitlines())
+        diff_str = '\n'.join(diff)
+        raise AssertionError(f"Difference found in {id} :\n{diff_str}")
+
+# Function to compare two dictionaries and create a diff
+def create_diff(local_yaml, github_yaml):
+    diff = {}
+    all_keys = set(local_yaml.keys()).union(set(github_yaml.keys()))
+    for key in all_keys:
+        if any(regex.search(key) for regex in IGNORE_CONFIG_KEYS_REGEX):
+            continue
+        local_value = local_yaml.get(key, "Not Present")
+        github_value = github_yaml.get(key, "Not Present")
+        if local_value != github_value:
+            diff[key] = {'ethereum': str(github_value), 'gnosis': str(local_value)}
+    return diff
+
+def parse_md_table_to_json(md_content):
+    """Parse a markdown table and convert it to a JSON-like dictionary."""
+    json_data = {}
+    lines = md_content.splitlines()
+    for line in lines[2:]:  # Skip header lines
+        if '|' in line:
+            parts = [part.strip() for part in line.strip().split('|')]
+            if len(parts) < 4:
+                raise Exception(f"expected 3 but found {len(parts)} columns in table row {line}")
+            key = parts[1].strip('`')
+            ethereum = parts[2].strip('`') 
+            gnosis = parts[3].strip('`') 
+            json_data[key] = {'ethereum': ethereum, 'gnosis': gnosis}
+    return json_data
+
+def extract_config_diff_section(md_content):
+    return re.search(r'### Config diff\n(.*?)(?=\n###|$)', md_content, re.DOTALL).group(1).strip()
+
+def extract_preset_diff_section(md_content):
+    return re.search(r'### Preset diff\n(.*?)(?=\n###|$)', md_content, re.DOTALL).group(1).strip()
+
+
 parser = argparse.ArgumentParser(description='Compare YAML keys.')
 parser.add_argument('--dev', action='store_true', help='check against dev branch')
 args = parser.parse_args()
 
-for local_file_path, remote_url_path in files:
-    commit = 'dev' if args.dev else DEFAULT_COMMIT
+default_commit = read_default_commit_from_md(CONSENSUS_SPEC_FILEPATH)
+print("default_commit", default_commit)
 
-    url = f"{remote_base_url}/{commit}/{remote_url_path}" 
-    github_yaml_str = load_yaml_from_github(url)
-    local_yaml_str = load_yaml_from_local(local_file_path)
+config_diff = {}
+preset_diff = {}
+
+for local_file_path, remote_url_path in FILES:
+    commit = 'dev' if args.dev else default_commit
+
+    url = f"{REMOTE_BASE_URL}/{commit}/{remote_url_path}" 
+    print(url)
+    github_yaml_str = load_str_from_github(url)
+    local_yaml_str = load_str_from_local(local_file_path)
     github_yaml = yaml.safe_load(github_yaml_str)
     local_yaml = yaml.safe_load(local_yaml_str)
 
@@ -70,11 +144,9 @@ for local_file_path, remote_url_path in files:
 
     print(local_file_path, commit, remote_url_path)
     if new_keys:
-        print("New keys found in GitHub YAML not used in local YAML:", new_keys)
-        sys.exit(1)
+        raise Exception(f"New keys found in GitHub YAML not used in local YAML: {new_keys}")
     elif missing_keys:
-        print("Keys in local YAML not found in GitHub YAML:", missing_keys)
-        sys.exit(1)
+        raise Exception(f"Keys in local YAML not found in GitHub YAML: {missing_keys}")
     else:
         print("No differences in keys found.")
 
@@ -84,4 +156,17 @@ for local_file_path, remote_url_path in files:
         lineterm=''
     )
     print('\n'.join(line for line in diff if line.startswith(('+', '-'))))
+
+    diff = create_diff(local_yaml, github_yaml)
+    if "config" in local_file_path:
+        config_diff = {**config_diff, **diff}
+    else:
+        preset_diff = {**preset_diff, **diff}
+
+consensus_spec_str = load_str_from_local(CONSENSUS_SPEC_FILEPATH)
+config_diff_table = parse_md_table_to_json(extract_config_diff_section(consensus_spec_str))
+preset_diff_table = parse_md_table_to_json(extract_preset_diff_section(consensus_spec_str))
+
+assert_deep_equal_dict(config_diff, config_diff_table, "config diff table")
+assert_deep_equal_dict(preset_diff, preset_diff_table, "preset diff table")
 
