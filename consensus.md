@@ -2,7 +2,7 @@
 
 Gnosis Beacon Chain follows the [Ethereum Proof-of-Stake consensus specifications](https://github.com/ethereum/consensus-specs) with different preset values. See [_Separation of Constant, Preset and Configuration variables #2390_](https://github.com/ethereum/consensus-specs/pull/2390) as definition of a preset versus a regular chain config.
 
-Refer to [gnosischain/configs/mainnet/config.yaml](https://github.com/gnosischain/configs/blob/main/mainnet/config.yaml) for the chain's full config.
+Refer to [./consensus/config/gnosis.yaml](./consensus/config/gnosis.yaml) for the chain's full config.
 
 Note that modified preset values will result in different SSZ data structures, such that a client compiled with the Ethereum mainnet preset can't deserialize a state from the Gnosis Beacon Chain.
 
