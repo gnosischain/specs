@@ -6,52 +6,28 @@ Refer to [gnosischain/configs/mainnet/config.yaml](https://github.com/gnosischai
 
 Note that modified preset values will result in different SSZ data structures, such that a client compiled with the Ethereum mainnet preset can't deserialize a state from the Gnosis Beacon Chain.
 
-### phase0
+```
+ETHEREUM_SPEC_COMMIT: v1.4.0-beta.4
+```
 
-**Preset**
+### Preset diff
 
-| Name                 | Value |
-| -------------------- | ----- |
-| `BASE_REWARD_FACTOR` | `25`  |
-| `SLOTS_PER_EPOCH`    | `16`  |
+| Name                                   | Ethereum spec | Gnosis spec |
+| -------------------------------------- | ------- | ------ |
+| `BASE_REWARD_FACTOR`                   | `64`    | `25`   |
+| `SLOTS_PER_EPOCH`                      | `32`    | `16`   |
+| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD`     | `256`   | `512`  |
+| `MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP` | `16384` | `8192` |
+| `MAX_WITHDRAWALS_PER_PAYLOAD`          | `16`    | `8`    |
 
-**Config**
+### Config diff
 
-| Name                                 | Value                                        |
-| ------------------------------------ | -------------------------------------------- |
-| `SECONDS_PER_SLOT`                   | `5`                                          |
-| `SECONDS_PER_ETH1_BLOCK`             | `6`                                          |
-| `ETH1_FOLLOW_DISTANCE`               | `1024`                                       |
-| `CHURN_LIMIT_QUOTIENT`               | `4096`                                       |
-| `DEPOSIT_CHAIN_ID`                   | `100`                                        |
-| `DEPOSIT_NETWORK_ID`                 | `100`                                        |
-| `DEPOSIT_CONTRACT_ADDRESS`           | `0x0b98057ea310f4d31f2a452b414647007d1645d9` |
-| `MIN_GENESIS_TIME`                   | `1638968400`                                 |
-| `MIN_GENESIS_ACTIVE_VALIDATOR_COUNT` | `4096`                                       |
-| `GENESIS_FORK_VERSION`               | `0x00000064`                                 |
-| `GENESIS_DELAY`                      | `6000`                                       |
+| Name                                    | Ethereum spec | Gnosis spec  | 
+| --------------------------------------- | ------------- | ------------ |
+| `CHURN_LIMIT_QUOTIENT`                  | `65536`       | `4096`       |
+| `SECONDS_PER_SLOT`                      | `12`          | `5`          |
+| `SECONDS_PER_ETH1_BLOCK`                | `14`          | `6`          |
+| `ETH1_FOLLOW_DISTANCE`                  | `2048`        | `1024`       |
+| `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          |
+| `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`        | `16384`      |
 
-### altair
-
-**Preset**
-
-| Name                               | Value |
-| ---------------------------------- | ----- |
-| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD` | `512` |
-
-**Config**
-
-| Name                  | Value        |
-| --------------------- | ------------ |
-| `ALTAIR_FORK_VERSION` | `0x01000064` |
-| `ALTAIR_FORK_EPOCH`   | `512`        |
-
-### bellatrix
-
-**Config**
-
-| Name                        | Value                                            |
-| --------------------------- | ------------------------------------------------ |
-| `BELLATRIX_FORK_VERSION`    | `0x02000064`                                     |
-| `BELLATRIX_FORK_EPOCH`      | `385536`                                         |
-| `TERMINAL_TOTAL_DIFFICULTY` | `8626000000000000000000058750000000000000000000` |
