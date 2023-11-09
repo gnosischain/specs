@@ -22,14 +22,12 @@ ETHEREUM_SPEC_COMMIT: v1.4.0-beta.4
 
 ### Config diff
 
-| Name                                 | Ethereum spec | Gnosis spec  | 
-| ------------------------------------ | ------------- | ------------ |
-| `PRESET_BASE`                        | `mainnet`     | `gnosis` |
-| `CHURN_LIMIT_QUOTIENT`               | `65536`       | `4096`       |
-| `SECONDS_PER_SLOT`                   | `12`          | `5`          |
-| `SECONDS_PER_ETH1_BLOCK`             | `14`          | `6`          |
-| `ETH1_FOLLOW_DISTANCE`               | `2048`        | `1024`       |
-| `TERMINAL_TOTAL_DIFFICULTY`          | `58750000000000000000000` | `8626000000000000000000058750000000000000000000` |
-| `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT` | `8`         | `2` |
-| `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`     | `16384` |
+| Name                                    | Ethereum spec | Gnosis spec  | 
+| --------------------------------------- | ------------- | ------------ |
+| `CHURN_LIMIT_QUOTIENT`                  | `65536`       | `4096`       |
+| `SECONDS_PER_SLOT`                      | `12`          | `5`          |
+| `SECONDS_PER_ETH1_BLOCK`                | `14`          | `6`          |
+| `ETH1_FOLLOW_DISTANCE`                  | `2048`        | `1024`       |
+| `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          |
+| `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`        | `16384`      |
 

@@ -34,15 +34,21 @@ CONSENSUS_SPEC_FILEPATH = "consensus.md"
 
 # Keys to ignore for the config / preset diff tables
 IGNORE_CONFIG_KEYS = [
-    '_FORK_EPOCH',
-    '_FORK_VERSION',
+    # Genesis information is not relevant to display as diff
     'MIN_GENESIS_TIME',
     'MIN_GENESIS_ACTIVE_VALIDATOR_COUNT',
     'GENESIS_DELAY',
+    # Config name will be different
     'CONFIG_NAME',
+    'PRESET_BASE',
+    # Deposit bridge data differs between all networks, not relevant in diff
     'DEPOSIT_CONTRACT_ADDRESS',
     'DEPOSIT_CHAIN_ID',
     'DEPOSIT_NETWORK_ID',
+    # Fork scheduling differs between all networks, not relevant in diff
+    'TERMINAL_TOTAL_DIFFICULTY',
+    '_FORK_EPOCH',
+    '_FORK_VERSION',
 ]
 IGNORE_CONFIG_KEYS_REGEX = [re.compile(pattern) for pattern in IGNORE_CONFIG_KEYS]
 
