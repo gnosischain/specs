@@ -16,7 +16,7 @@ ETHEREUM_SPEC_COMMIT: v1.4.0-beta.4
 | -------------------------------------- | ------- | ------ |
 | `BASE_REWARD_FACTOR`                   | `64`    | `25`   |
 | `SLOTS_PER_EPOCH`                      | `32`    | `16`   |
-| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD`     | `256  ` | `512`  |
+| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD`     | `256`   | `512`  |
 | `MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP` | `16384` | `8192` |
 | `MAX_WITHDRAWALS_PER_PAYLOAD`          | `16`    | `8`    |
 
