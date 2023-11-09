@@ -22,12 +22,12 @@ ETHEREUM_SPEC_COMMIT: v1.4.0-beta.4
 
 ### Config diff
 
-| Name                                    | Ethereum spec | Gnosis spec  | 
-| --------------------------------------- | ------------- | ------------ |
+| Name                                    | Ethereum spec | Gnosis spec  |   |
+| --------------------------------------- | ------------- | ------------ | - |
 | `CHURN_LIMIT_QUOTIENT`                  | `65536`       | `4096`       |
 | `SECONDS_PER_SLOT`                      | `12`          | `5`          |
 | `SECONDS_PER_ETH1_BLOCK`                | `14`          | `6`          |
 | `ETH1_FOLLOW_DISTANCE`                  | `2048`        | `1024`       |
-| `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          |
-| `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`        | `16384`      |
+| `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          | See https://github.com/gnosischain/specs/pull/22 for rationale |
+| `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`        | `16384`      | Increased to match the expected 2 weeks rollups consider today for Ethereum mainnet. The total disk requirement roughly equivalent to Ethereum mainnet since epochs are 4.8x faster |
 
