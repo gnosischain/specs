@@ -33,7 +33,7 @@ ETHEREUM_SPEC_COMMIT_PREFIX = "ETHEREUM_SPEC_COMMIT: "
 CONSENSUS_SPEC_FILEPATH = "consensus.md"
 
 # Keys to ignore for the config / preset diff tables
-IGNORE_CONFIG_KEYS = [
+IGNORE_FOR_DIFF_CONFIG_KEYS = [
     # Genesis information is not relevant to display as diff
     'MIN_GENESIS_TIME',
     'MIN_GENESIS_ACTIVE_VALIDATOR_COUNT',
@@ -50,7 +50,14 @@ IGNORE_CONFIG_KEYS = [
     '_FORK_EPOCH',
     '_FORK_VERSION',
 ]
-IGNORE_CONFIG_KEYS_REGEX = [re.compile(pattern) for pattern in IGNORE_CONFIG_KEYS]
+IGNORE_FROM_REMOTE_CONFIG_KEYS = [
+    # Ignore pre-release
+    'WHISK_EPOCHS_PER_SHUFFLING_PHASE',
+    'WHISK_PROPOSER_SELECTION_GAP',
+    'EIP6110_FORK_',
+    'EIP7002_FORK_',
+    'WHISK_FORK_'
+]
 
 def read_default_commit_from_md(file_path):
     with open(file_path, 'r') as file:
@@ -81,6 +88,11 @@ def compare_yaml_keys(github_yaml, local_yaml):
 
     return new_keys, missing_keys
 
+def delete_prerelease_keys(d):
+    keys_to_delete = [key for key in d if any(re.compile(regex).search(key) for regex in IGNORE_FROM_REMOTE_CONFIG_KEYS)]
+    for key in keys_to_delete:
+        del d[key]
+
 def assert_deep_equal_dict(a, b, id):
     try:
         assert a == b
@@ -96,7 +108,7 @@ def create_diff(local_yaml, github_yaml):
     diff = {}
     all_keys = set(local_yaml.keys()).union(set(github_yaml.keys()))
     for key in all_keys:
-        if any(regex.search(key) for regex in IGNORE_CONFIG_KEYS_REGEX):
+        if any(re.compile(regex).search(key) for regex in IGNORE_FOR_DIFF_CONFIG_KEYS):
             continue
         local_value = local_yaml.get(key, "Not Present")
         github_value = github_yaml.get(key, "Not Present")
@@ -141,10 +153,9 @@ for local_file_path, remote_url_path in FILES:
 
     url = f"{REMOTE_BASE_URL}/{commit}/{remote_url_path}" 
     print(url)
-    github_yaml_str = load_str_from_github(url)
-    local_yaml_str = load_str_from_local(local_file_path)
-    github_yaml = yaml.safe_load(github_yaml_str)
-    local_yaml = yaml.safe_load(local_yaml_str)
+    github_yaml = yaml.safe_load(load_str_from_github(url))
+    local_yaml = yaml.safe_load(load_str_from_local(local_file_path))
+    delete_prerelease_keys(github_yaml)
 
     new_keys, missing_keys = compare_yaml_keys(github_yaml, local_yaml)
 
@@ -155,13 +166,6 @@ for local_file_path, remote_url_path in FILES:
         raise Exception(f"Keys in local YAML not found in GitHub YAML: {missing_keys}")
     else:
         print("No differences in keys found.")
-
-    diff = difflib.unified_diff(
-        github_yaml_str.splitlines(),
-        local_yaml_str.splitlines(),
-        lineterm=''
-    )
-    print('\n'.join(line for line in diff if line.startswith(('+', '-'))))
 
     diff = create_diff(local_yaml, github_yaml)
     if "config" in local_file_path:
