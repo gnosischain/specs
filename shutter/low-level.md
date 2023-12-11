@@ -575,8 +575,9 @@ The following functions are considered prerequisites:
 ### Helper Functions
 
 ```python
-def hash_block_to_int(block: Block) -> int:
-    h = keccak256(block)
+def hash_blocks_to_int(blocks: Sequence[Block]) -> int:
+    p = b"".join(blocks)
+    h = keccak256(p)
     i = int.from_bytes(h, "big")
     return i % ORDER
 
@@ -664,15 +665,16 @@ def compute_decryption_key(keyper_indices: Sequence[int], shares: Sequence[G1]) 
 ```python
 def encrypt(message: bytes, identity: G1, eon_key: G2, sigma: Block) -> EncryptedMessage:
     message_blocks = pad_and_split(message)
-    r = compute_r(sigma)
+    r = compute_r(sigma, message)
     return (
         compute_c1(r),
         compute_c2(sigma, r, identity, eon_key),
         compute_c3(message_blocks, sigma),
     )
 
-def compute_r(sigma: Block) -> int:
-    return hash_block_to_int(sigma)
+def compute_r(sigma: Block, message: bytes) -> int:
+    message_hash = hash_bytes_to_block(message)
+    return hash_blocks_to_int([sigma, message_hash])
 
 def compute_c1(r: int) -> G2:
     return g2_scalar_base_mult(r)
@@ -696,10 +698,16 @@ def compute_identity(prefix: bytes, sender: bytes) -> G1:
 ```python
 def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
     sigma = recover_sigma(encrypted_message, decryption_key)
-    _, _, blocks = encrypted_message
+    c1, _, blocks = encrypted_message
     keys = compute_block_keys(sigma, len(blocks))
     decrypted_blocks = [xor_blocks(key, block) for key, block in zip(keys, blocks)]
-    return unpad_and_join(decrypted_blocks)
+    message = unpad_and_join(decrypted_blocks)
+
+    r = compute_r(sigma, message)
+    expected_c1 = compute_c1(r)
+    assert c1 == expected_c1
+
+    return message
 
 def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Block:
     c1, c2, _ = encrypted_message
