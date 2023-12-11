@@ -285,7 +285,7 @@ The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implemen
 
 ```solidity
 interface ISequencer {
-    function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, address sender, bytes memory encryptedTransaction, uint256 gasLimit) external;
+    function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, bytes memory encryptedTransaction, uint256 gasLimit) external;
     function submitDecryptionProgress(bytes memory message) external;
 
     event TransactionSubmitted(uint64 eon, bytes32 identityPrefix, address sender, bytes encryptedTransaction, uint256 gasLimit);
