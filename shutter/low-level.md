@@ -267,14 +267,6 @@ Transactions `txs[j]` for `j >= 1` are a subset of `decrypted_transactions`. The
 >
 > :construction: :construction: :construction:
 
-### Decryption Key Relay
-
-> :construction: :construction: :construction:
->
-> Todo
->
-> :construction: :construction: :construction:
-
 ## Smart Contracts
 
 This section specifies the interfaces and behavior of the smart contracts in the protocol. The id of the chain on which they are deployed is `CHAIN_ID`.
