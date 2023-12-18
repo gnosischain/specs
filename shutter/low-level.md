@@ -20,9 +20,9 @@ Each keyper has a private key `keyper_private_key` to an Ethereum address `keype
 
 #### Chain Monitoring
 
-At all times, the keyper monitors the chain. They keep track of the current slot `s`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
+At all times, the keyper monitors the chain. They keep track of the current slot number `slot`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
 
-- the current eon `eon = keyperSetManager.getKeyperSetIndexBySlot(s)`,
+- the current eon `eon = keyperSetManager.getKeyperSetIndexBySlot(slot)`,
 - the active keyper set contract `keyperSetContract = IKeyperSet(keyperSetManager.getKeyperSetAddress(eon))`,
 - the active keyper set `keypers = keyperSetContract.getMembers()`, and
 - the threshold `threshold = keyperSetContract.getThreshold()`.
@@ -31,13 +31,13 @@ Lastly, they monitor the `validatorRegistry = IValidatorRegistry(VALIDATOR_REGIS
 
 #### Slot Processing
 
-At the beginning of each slot `s`, the keyper checks if `keyper_address` is an element of `keypers`. If not, they suspend slot processing until the start of the next slot.
+At the beginning of each slot `slot`, the keyper checks if `keyper_address` is an element of `keypers`. If not, they suspend slot processing until the start of the next slot.
 
-Otherwise, they check if the block proposer of slot `s` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend slot processing until the start of the next slot.
+Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend slot processing until the start of the next slot.
 
 Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
 
-Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, s, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
+Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
 
 ```protobuf
 message DecryptionKeyShares {
@@ -243,21 +243,21 @@ Validators keep track if they are registered in the Validator Registry, i.e., `v
 
 Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `tbd` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
 
-If a registered validator is selected as the block proposer for slot `s`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == s`. If no such message is received up until the end of `s`, the proposer proposes no block.
+If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
-Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `e` from the sequencer contract that, for any `k` in `keys_message.keys`, fulfill.
+Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill.
 
 - `e.args.eon == keys_message.eon` and
-- `compute_identity(e.args.identityPrefix, keys_message.sender) == k.identity`.
+- `compute_identity(e.args.identityPrefix, keys_message.sender) == key.identity`.
 
-The events are fetched in the order the events were emitted. For each `e` with corresponding `k`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, k.key)`. If any of the functions fails, they skip `e`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
+The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
-With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `b` with transactions `txs`. `txs[0]` makes the contract at `SEQUENCER_ADDRESS` to emit the event `DecryptionProgressSubmitted` exactly once with argument `message = keys_message`.
+With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block` with transactions `txs`. `txs[0]` makes the contract at `SEQUENCER_ADDRESS` to emit the event `DecryptionProgressSubmitted` exactly once with argument `message = keys_message`.
 
 Transactions `txs[j]` for `j >= 1` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
 
 - Inserting it in accordance with the ordering property and removing all following transactions would make the block invalid.
-- Its gas limit is different from the gas limit specified by the corresponding `TransactionSubmitted` event `e` in the argument `e.args.gasLimit`.
+- Its gas limit is different from the gas limit specified by the corresponding `TransactionSubmitted` event `tx_submitted_event` in the argument `e.args.gasLimit`.
 
 ### Encrypting RPC Server
 
@@ -270,13 +270,13 @@ The server is configurable with the following values:
 
 #### eth_sendRawTransaction
 
-The server exposes a method `eth_sendRawTransaction` that behaves differently to the standard. It takes a hex encoded, `0x` prefixed string `h` as its sole parameter. If not exactly one parameter is provided, the server responds with an error with code `-32602`. If `h` is not the hex encoding of a byte string `b` or `b` is not the RLP encoding of a valid transaction `tx`, it returns an error with code `-32602`.
+The server exposes a method `eth_sendRawTransaction` that behaves differently to the standard. It takes a hex encoded, `0x` prefixed string `txHex` as its sole parameter. If not exactly one parameter is provided, the server responds with an error with code `-32602`. If `txHex` is not the hex encoding of a byte string `txBytes` or `txBytes` is not the RLP encoding of a valid transaction `tx`, it returns an error with code `-32602`.
 
 If the sender of `tx` has insufficient funds to pay the transaction fee or if the sender's nonce does not match the account nonce, the server responds with an error with code `-32000`.
 
-Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(s + keyper_set_change_lookahead)` where `s` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix, address)`.
+Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(slot + keyper_set_change_lookahead)` where `slot` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix, address)`.
 
-Finally, the server creates a transaction `submit_tx` which calls `ISequencer(SEQUENCER_ADDRESS).submitEncryptedTransaction(eon, identity_prefix, address, encryptedTransaction, tx.gasLimit)`, sets gas limit and nonce as needed and chooses gas price parameters appropriate to the current network conditions. If the account identified by `address`has insufficient funds, it returns an error with code`-32603`. Otherwise, it signs `submit_tx` with `private_key`, broadcasts it to the network, and returns the hex encoded hash of `tx` to the user.
+Finally, the server creates a transaction `submit_tx` which calls `ISequencer(SEQUENCER_ADDRESS).submitEncryptedTransaction(eon, identity_prefix, address, encryptedTransaction, tx.gasLimit)`, sets gas limit and nonce as needed and chooses gas price parameters appropriate to the current network conditions. If the account identified by `address` has insufficient funds, it returns an error with code`-32603`. Otherwise, it signs `submit_tx` with `private_key`, broadcasts it to the network, and returns the hex encoded hash of `tx` to the user.
 
 The server may rate limit calls to `eth_sendRawTransaction` based on the sender of `tx` as well as the originating IP address, in which case it responds with an error with code `-32005`.
 
@@ -520,7 +520,7 @@ Then, there are `n` eons `e_i` starting at slot `s_i` (inclusive). Eon `e_i` for
 
 `getNumKeyperSets()` returns `n`.
 
-`getKeyperSetIndexBySlot(s)` reverts if `n == 0` or `s < s_0`. Otherwise, it returns `k_i` where `i` is the index of the eon that contains slot `s`.
+`getKeyperSetIndexBySlot(slot)` reverts if `n == 0` or `s < s_0`. Otherwise, it returns `k_i` where `i` is the index of the eon that contains slot `slot`.
 
 `getKeyperSetAddress(i)` reverts if `i >= n`. Otherwise, it returns `k_i`.
 
