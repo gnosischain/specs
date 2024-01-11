@@ -50,26 +50,18 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | TBD | TBD | -         | TBD             |
+| Chiado  | 1706724940 | Wed Jan 31 2024 18:15:40 GMT+0000 | -         | 516608           |
 | Mainnet | TBD | TBD | -         | TBD             |
-
-### Implementation Progresss
-
-Implementation status of Included & CFI'd EIPs across participating clients.
-
-| EIP                                    | **Nethermind** | **Erigon** |
-| -------------------------------------- | -------------- | ---------- |
-| [EIP-4844](./execution/withdrawals.md) | -              | -          |
 
 ### Readiness Checklist
 
 **List of outstanding items before deployment.**
 
-- [ ] Client Integration Testing
-  - [ ] Deploy a Client Integration Testnet
-  - [ ] Integration Tests
+- [x] Client Integration Testing
+  - [x] Deploy a Client Integration Testnet
+  - [x] Integration Tests
 - [ ] Select Fork Triggers
-  - [ ] Chiado
+  - [x] Chiado
   - [ ] Mainnet
 - [ ] Deploy Clients
 - [ ] Activate Fork
