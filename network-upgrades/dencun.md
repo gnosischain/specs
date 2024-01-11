@@ -4,15 +4,17 @@
 
 This hard fork activates all EIPs also activated on [Ethereum mainnet](https://github.com/ethereum/execution-specs/blob/2a592a8268311bb6c28c8ca25ff8a35a74615127/network-upgrades/mainnet-upgrades/cancun.md#included-eips). Table below list differences if any.
 
-| EIP |   |
-| --- | - |
-| [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153): Transient storage opcodes             | Not modified
-| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM          | Not modified, same addresses as Ethereum
-| [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions               | Constants maybe modified from Ethereum (* )
-| [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction    | Not modified
-| [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction | Not modified
-| [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514): Add Max Epoch Churn Limit             | Constants maybe modified from Ethereum (* )
-| [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516): BLOBBASEFEE opcode                    | Not modified
+| EIP | Scope |   |
+| - | - | - |
+| [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153): Transient storage opcodes                | EL     | Not modified
+| [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM             | CL, EL | Not modified, same addresses as Ethereum
+| [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions                  | CL, EL | Constants maybe modified from Ethereum (* )
+| [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction       | EL     | Not modified
+| [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction    | EL     | Not modified
+| [EIP-7044](https://eips.ethereum.org/EIPS/eip-7044): Perpetually Valid Signed Voluntary Exits | CL     | Not modified
+| [EIP-7045](https://eips.ethereum.org/EIPS/eip-7045): Increase max attestation inclusion slot  | CL     | Not modified
+| [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514): Add Max Epoch Churn Limit                | CL     | Constants maybe modified from Ethereum (* )
+| [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516): BLOBBASEFEE opcode                       | EL     | Not modified
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
