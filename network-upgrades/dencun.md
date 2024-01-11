@@ -16,6 +16,8 @@ This hard fork activates all EIPs also activated on [Ethereum mainnet](https://g
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
+Note: The trusted setup required for [deneb's cryptography](https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/polynomial-commitments.md#trusted-setup) is the same as defined in Ethereum's consensus spec release v1.4.0, which can be found in [consensus/preset/trusted_setups/trusted_setup_4096.json](./consensus/preset/trusted_setups/trusted_setup_4096.json).
+
 ## Differences with Ethereum mainnet
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
