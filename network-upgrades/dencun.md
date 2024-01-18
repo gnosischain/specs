@@ -2,7 +2,11 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on [Ethereum mainnet](https://github.com/ethereum/execution-specs/blob/2a592a8268311bb6c28c8ca25ff8a35a74615127/network-upgrades/mainnet-upgrades/cancun.md#included-eips). Table below list differences if any.
+This hard fork activates all EIPs also activated on Ethereum mainnet:
+- [Execution spec](https://github.com/ethereum/execution-specs/blob/2a592a8268311bb6c28c8ca25ff8a35a74615127/network-upgrades/mainnet-upgrades/cancun.md#included-eips)
+- [Consensus spec](https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/beacon-chain.md#introduction)
+
+Table below list differences if any.
 
 | EIP | Scope |   |
 | - | - | - |
@@ -37,7 +41,7 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 
-Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `MAX_PER_EPOCH_CHURN_LIMIT` value of 2 provides a good trade-off to:
+Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT` value of 2 provides a good trade-off to:
 - Limit max state growth in the next year to 1M validators
 - Increase the minimum time for a 2/3 malicious take-over to 150 days at current validator set sizes
 - Allow validator set growth to prevent long queues unless there's exceptional demand 
@@ -46,7 +50,7 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 
 | Constant | Value |
 | -------- | ----- |
-| MAX_PER_EPOCH_CHURN_LIMIT | 2 |
+| MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT | 2 |
 
 ## Upgrade Schedule
 
