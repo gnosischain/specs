@@ -580,7 +580,7 @@ The following functions are considered prerequisites:
 | g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar                                                           |
 | g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar                                                        |
 | g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar                                                        |
-| gt_scalar_mult(GT, int) -> GT  | Multiply an element of GT by a scalar                                                           |
+| gt_exp(GT, int) -> GT          | Exponentiate an element of GT by a scalar                                                       |
 | encode_g1(G1) -> bytes         | Encode an element of G1 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
 | encode_g2(G2) -> bytes         | Encode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
 | decode_g2(bytes) -> G2         | Decode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
@@ -716,7 +716,7 @@ def compute_c1(r: int) -> G2:
 
 def compute_c2(sigma: Block, r: int, identity: G1, eon_key: G2) -> Block:
     p = pairing(identity, eon_key)
-    preimage = gt_scalar_mult(p, r)
+    preimage = gt_exp(p, r)
     key = hash2(preimage)
     return xor_blocks(sigma, key)
 
