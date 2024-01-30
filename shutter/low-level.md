@@ -588,18 +588,23 @@ The following functions are considered prerequisites:
 ### Helper Functions
 
 ```python
-def hash_blocks_to_int(blocks: Sequence[Block]) -> int:
-    p = b"".join(blocks)
-    h = keccak256(p)
+def hash1(preimage: bytes) -> G1:
+    h = keccak256(b"\x01" + preimage)
+    i = int.from_bytes(h, "big")
+    return g1_scalar_base_mult(i)
+
+def hash2(preimage: GT) -> Block:
+    b = encode_gt(preimage)
+    return keccak256(b"\x02" + b)
+
+def hash3(preimage: bytes) -> int:
+    h = keccak256(b"\x03" + preimage)
     i = int.from_bytes(h, "big")
     return i % ORDER
 
-def hash_gt_to_block(preimage: GT) -> Block:
-    b = encode_gt(preimage)
-    return hash_bytes_to_block(b)
+def hash4(preimage: bytes) -> Block:
+    return keccak256(b"\x04" + preimage)
 
-def hash_bytes_to_block(preimage: bytes) -> Block:
-    return keccak256(preimage)
 
 def encode_gt(v: GT) -> bytes:
     # elements from GT decompose into two elements x and y from the sixth-degree extension field GF(P^6)
@@ -644,7 +649,7 @@ def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
     suffix_length = max((n.bit_length() + 7) // 8, 1)
     suffixes = [n.to_bytes(suffix_length, "big")]
     preimages = [sigma + suffix for suffix in suffixes]
-    keys = [hash_bytes_to_block(preimage) for preimage in preimages]
+    keys = [hash4(preimage) for preimage in preimages]
     return keys
 
 def compute_lagrange_coefficients(indices: Sequence[int]) -> Sequence[int]:
@@ -704,8 +709,7 @@ def encrypt(message: bytes, identity: G1, eon_key: G2, sigma: Block) -> Encrypte
     )
 
 def compute_r(sigma: Block, message: bytes) -> int:
-    message_hash = hash_bytes_to_block(message)
-    return hash_blocks_to_int([sigma, message_hash])
+    return hash3(sigma + message)
 
 def compute_c1(r: int) -> G2:
     return g2_scalar_base_mult(r)
@@ -713,7 +717,7 @@ def compute_c1(r: int) -> G2:
 def compute_c2(sigma: Block, r: int, identity: G1, eon_key: G2) -> Block:
     p = pairing(identity, eon_key)
     preimage = gt_scalar_mult(p, r)
-    key = hash_gt_to_block(preimage)
+    key = hash2(preimage)
     return xor_blocks(sigma, key)
 
 def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
@@ -721,9 +725,7 @@ def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]
     return [xor_blocks(key, block) for key, block in zip(keys, message_blocks)]
 
 def compute_identity(prefix: bytes, sender: bytes) -> G1:
-    h = keccak256(prefix + sender)
-    i = int.from_bytes(h, "big")
-    return g1_scalar_base_mult(i)
+    return hash1(prefix + sender)
 ```
 
 ```python
@@ -743,7 +745,7 @@ def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
 def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Block:
     c1, c2, _ = encrypted_message
     p = pairing(decryption_key, c1)
-    key = hash_gt_to_block(p)
+    key = hash2(p)
     sigma = xor_blocks(c2, key)
     return sigma
 ```
