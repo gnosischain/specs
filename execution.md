@@ -4,7 +4,7 @@
 
 - [ ] AuRa
 - [ ] POSDAO
-- [ ] POSDAO post-merge
+- [POSDAO post-merge](./execution/posdao-post-merge.md)
 - [Withdrawals](./execution/withdrawals.md)
 - [Shutter](./shutter/high-level.md)
 
