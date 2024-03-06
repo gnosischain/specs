@@ -2,12 +2,13 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on Ethereum mainnet. There is however one addition and one change to an EIP, detailed below.
+This hard fork activates all EIPs also activated on Ethereum mainnet, [paris specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/paris.md).
+Table below list differences if any.
 
-- [x] [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (\*)
-- [x] [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO
-
-\* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
+| EIP | Scope |  |
+| - | - | - |
+| [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake | CL, EL | Modified
+| [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO | EL | Not modified
 
 ## Differences with Ethereum mainnet
 

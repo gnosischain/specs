@@ -2,7 +2,7 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on [Ethereum mainnet](https://eips.ethereum.org/EIPS/eip-7569).
+This hard fork activates all EIPs also activated on Ethereum mainnet, [hard-fork EIP](https://eips.ethereum.org/EIPS/eip-7569).
 Table below list differences if any.
 
 | EIP | Scope |   |
