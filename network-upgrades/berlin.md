@@ -2,7 +2,7 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on [Ethereum mainnet](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/berlin.md).
+This hard fork activates all EIPs also activated on Ethereum mainnet, [berlin specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/berlin.md).
 Table below list differences if any.
 
 | EIP |  |
