@@ -30,7 +30,7 @@ FILES = [
 ]
 
 ETHEREUM_SPEC_COMMIT_PREFIX = "ETHEREUM_SPEC_COMMIT: "
-CONSENSUS_SPEC_FILEPATH = "consensus.md"
+CONSENSUS_SPEC_FILEPATH = "beacon_chain.md"
 
 # Keys to ignore for the config / preset diff tables
 IGNORE_FOR_DIFF_CONFIG_KEYS = [
