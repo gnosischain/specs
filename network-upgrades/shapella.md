@@ -2,7 +2,7 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on Ethereum mainnet, [shangai specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md). 
+This hard fork activates all EIPs also activated on Ethereum mainnet, [shanghai specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md). 
 Table below list differences if any.
 
 | EIP | Scope |  |
