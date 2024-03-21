@@ -2,17 +2,17 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on Ethereum mainnet, [shanghai specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md). 
+This hard fork activates all EIPs also activated on Ethereum mainnet, [shanghai specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md).
 Table below list differences if any.
 
 | EIP | Scope |  |
 | - | - | - |
 | [EIP-170](https://eips.ethereum.org/EIPS/eip-170): Contract code size limit | EL | Activated in Gnosis at a latter fork than Ethereum
 | [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651): Warm COINBASE | EL | Not modified
-| [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): PUSH0 instruction | EL | Not modified 
+| [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): PUSH0 instruction | EL | Not modified
 | [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860): Limit and meter initcode | EL | Not modified
 | [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations | CL, EL | Modified
-| [EIP-6049](https://eips.ethereum.org/EIPS/eip-6049): Deprecate SELFDESTRUCT | EL | Not modified 
+| [EIP-6049](https://eips.ethereum.org/EIPS/eip-6049): Deprecate SELFDESTRUCT | EL | Not modified
 
 ## Differences with Ethereum mainnet
 
@@ -28,8 +28,8 @@ This EIP has been adapted for Gnosis. More details in [`/execution/withdrawals.m
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | `1684934220` | May 24 2023 13:17:00 GMT+0000 | -         | 244224             |
-| Mainnet | `1690889660` | Aug 01 2023 11:34:20 GMT+0000 | -         | 648704             |
+| Chiado  | `1684934220` | May-24-2023 13:17:00 +UTC | -         | 244224             |
+| Mainnet | `1690889660` | Aug-01-2023 11:34:20 +UTC | -         | 648704             |
 
 ### Readiness Checklist
 
@@ -38,8 +38,8 @@ This EIP has been adapted for Gnosis. More details in [`/execution/withdrawals.m
 - [x] Client Integration Testing
   - [x] Deploy a Client Integration Testnet
   - [x] Integration Tests
-- [ ] Select Fork Triggers
+- [x] Select Fork Triggers
   - [x] Chiado
-  - [ ] Mainnet
-- [ ] Deploy Clients
-- [ ] Activate Fork
+  - [x] Mainnet
+- [x] Deploy Clients
+- [x] Activate Fork
