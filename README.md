@@ -15,7 +15,7 @@ This repository hosts the current specifications for Gnosis chain and Gnosis bea
 | - | - | - |
 | Dencun | Mar 11 2024 | [dencun.md](./network-upgrades/dencun.md) |
 | Shapella | Aug 01 2023 | [shapella.md](./network-upgrades/shapella.md) |
-| Merge / Paris | TBD | [merge.md](./network-upgrades/merge.md) |
+| Merge / Paris | Dec 8 2022 | [merge.md](./network-upgrades/merge.md) |
 | London | 19040000 (Nov 12 2021) | [london.md](./network-upgrades/london.md) |
 | Berlin | 16101500 (May 17 2021) | [berlin.md](./network-upgrades/berlin.md) |
 | Istanbul | 7298030 (Dec 12 2019) | [istanbul.md](./network-upgrades/istanbul.md) |
