@@ -53,8 +53,8 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | 1706724940 | Wed Jan 31 2024 18:15:40 GMT+0000 | -         | 516608           |
-| Mainnet | TBD | TBD | -         | TBD             |
+| Chiado  | 1706724940 | Jan-31-2024 18:15:40 +UTC | -     | 516608           |
+| Mainnet | 1710181820 | Mar-11-2024 18:30:20 +UTC | -     |     889856        |
 
 ### Readiness Checklist
 
@@ -63,8 +63,8 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 - [x] Client Integration Testing
   - [x] Deploy a Client Integration Testnet
   - [x] Integration Tests
-- [ ] Select Fork Triggers
+- [x] Select Fork Triggers
   - [x] Chiado
-  - [ ] Mainnet
-- [ ] Deploy Clients
-- [ ] Activate Fork
+  - [x] Mainnet
+- [x] Deploy Clients
+- [x] Activate Fork
