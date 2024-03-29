@@ -1,0 +1,21 @@
+name: Ethereum release check
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Check release
+      run: scripts/assert_ethereum_latest_release.py
+

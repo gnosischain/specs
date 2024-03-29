@@ -3,8 +3,6 @@ name: Ethereum key check
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 0 * * *' # Daily at 00:00 UTC
 
 jobs:
   check:
@@ -24,5 +22,5 @@ jobs:
     - name: Check keys
       # --dev checks against an unpinned commit. since new vars can be added at any time unpinned commits
       # are checked on a cron, not on regular flows.
-      run: python scripts/assert_declare_ethereum_vars.py ${{ github.event_name == 'schedule' && '--dev' || '' }}
+      run: python scripts/assert_declare_ethereum_vars.py
 
