@@ -36,6 +36,8 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 | MAX_BLOB_GAS_PER_BLOCK | 262144 |
 | BLOB_GASPRICE_UPDATE_FRACTION | 1112826 |
 
+See [rationale](./research/dencun/eip-7514.md) for chosen blob gas parameters.
+
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 
 Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT` value of 2 provides a good trade-off to:
@@ -43,7 +45,7 @@ Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `
 - Increase the minimum time for a 2/3 malicious take-over to 150 days at current validator set sizes
 - Allow validator set growth to prevent long queues unless there's exceptional demand
 
-See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
+See [rationale](./research/dencun/eip-7514.md) for more details
 
 | Constant | Value |
 | -------- | ----- |
