@@ -17,5 +17,5 @@ jobs:
         python-version: '3.x'
 
     - name: Check release
-      run: scripts/assert_ethereum_latest_release.py
+      run: python scripts/assert_ethereum_latest_release.py
 
