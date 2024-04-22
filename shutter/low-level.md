@@ -87,7 +87,7 @@ def make_decryption_key_shares_message(
         instanceID=INSTANCE_ID,
         eon=eon,
         keyperIndex=keyper_index,
-        slot=s,
+        slot=slot,
         txPointer=tx_pointer + len(txs),
         shares=shares,
         signature=signature,
@@ -201,13 +201,13 @@ The keyper processes the following `DecryptionKeys` messages:
 If a message `keys_message` is not valid according to `check_decryption_keys_message(keys_message, eon)` it is ignored:
 
 ```python
-def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, threshold: uint64) -> bool:
+def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon_public_key: bytes, threshold: uint64) -> bool:
     if keys_message.instanceID != INSTANCE_ID or keys_message.eon != eon:
         return False
 
     if not all(
         check_decryption_key(key_message.key, eon_public_key, key.identity)
-        for key in keys.keys
+        for key in keys_message.keys
     ):
         return False
 
@@ -218,6 +218,8 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, thr
         return False
     if len(keys_message.signatures) != threshold:
         return False
+
+    keypers: List[Address] = get_keyper_set()
 
     return all(
         check_slot_decryption_identities_signature(
@@ -821,7 +823,7 @@ def generate_hash(
         instance_id=instance_id,
         eon=eon,
         slot=slot,
-        identities=[encode_g1(identity) for identity for identities],
+        identities=[encode_g1(identity) for identity in identities],
     )
     return ssz.hash_tree_root(sdi)
 
