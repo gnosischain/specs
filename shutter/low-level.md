@@ -778,12 +778,17 @@ def encode_decryption_key(decryption_key: G1) -> bytes:
 def encode_decryption_key_share(decryption_key_share: G1) -> bytes:
     return encode_g1(decryption_key_share)
 
+CRYPTO_VERSION: byte = str(0x02).encode()
+
 def encode_encrypted_message(encrypted_message: EncryptedMessage) -> bytes:
     c1, c2, c3 = encrypted_message
-    return encode_g2(c1) + c2 + b"".join(c3)
+    return CRYPTO_VERSION + encode_g2(c1) + c2 + b"".join(c3)
 
 def decode_encrypted_message(b: bytes) -> EncryptedMessage:
+    version_id = b[0]
+    b = b[1:]
     assert len(b) > 4 * 32 + 32 + 32
+    assert version_id == CRYPTO_VERSION
     c1_bytes = b[:4 * 32]
     c2 = b[4 * 32: 5 * 32]
     c3_bytes = b[5 * 32:]
