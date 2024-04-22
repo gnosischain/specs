@@ -556,17 +556,17 @@ This section defines the cryptographic primitives used in the protocol.
 
 ### Definitions
 
-| Type                                              | Description                                                                                                                      |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `G1`                                              | An element of the BN256-group G1 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197#definition-of-the-groups)        |
-| `G2`                                              | An element of the BN256-group G2 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197#definition-of-the-groups)        |
-| `GT`                                              | An element of the BN256-group GT, the range of the pairing function defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197) |
-| `Block`                                           | A 32-byte block                                                                                                                  |
-| `EncryptedMessage` = (G2, Block, Sequence[Block]) | An encrypted message                                                                                                             |
-| `ECDSAPrivkey`                                    | A secp256k1 ECDSA private key                                                                                                    |
-| `ECDSASignature`                                  | A secp256k1 ECDSA signature encoded in format `R ++ S ++ V` where `V` is `0` or `1`                                              |
-| `Address`                                         | An Ethereum address                                                                                                              |
-| `uint64`                                          | An unsigned 64 bit integer                                                                                                       |
+| Type                                              | Description                                                                         |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `G1`                                              | An element of the first BLS12-381 subgroup                                          |
+| `G2`                                              | An element of the second BLS12-381 subgroup                                         |
+| `GT`                                              | An element of the BLS12-381 pairing target group                                    |
+| `Block`                                           | A 32-byte block                                                                     |
+| `EncryptedMessage` = (G2, Block, Sequence[Block]) | An encrypted message                                                                |
+| `ECDSAPrivkey`                                    | A secp256k1 ECDSA private key                                                       |
+| `ECDSASignature`                                  | A secp256k1 ECDSA signature encoded in format `R ++ S ++ V` where `V` is `0` or `1` |
+| `Address`                                         | An Ethereum address                                                                 |
+| `uint64`                                          | An unsigned 64 bit integer                                                          |
 
 | Constant | Description                   | Value                                                                         |
 | -------- | ----------------------------- | ----------------------------------------------------------------------------- |
@@ -574,18 +574,18 @@ This section defines the cryptographic primitives used in the protocol.
 
 The following functions are considered prerequisites:
 
-| Function                       | Description                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| keccak256(bytes) -> Block      | The keccak-256 hash function                                                                    |
-| pairing(G1, G2) -> GT          | The pairing function specified in [EIP-197](https://eips.ethereum.org/EIPS/eip-197)             |
-| g1_add(G1, G1) -> G1           | Add two elements of G1                                                                          |
-| g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar                                                           |
-| g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar                                                        |
-| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar                                                        |
-| gt_exp(GT, int) -> GT          | Exponentiate an element of GT by a scalar                                                       |
-| encode_g1(G1) -> bytes         | Encode an element of G1 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
-| encode_g2(G2) -> bytes         | Encode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
-| decode_g2(bytes) -> G2         | Decode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
+| Function                       | Description                               |
+| ------------------------------ | ----------------------------------------- |
+| keccak256(bytes) -> Block      | The keccak-256 hash function              |
+| pairing(G1, G2) -> GT          | The BLS12-381 pairing function            |
+| g1_add(G1, G1) -> G1           | Add two elements of G1                    |
+| g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar     |
+| g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar  |
+| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar  |
+| gt_exp(GT, int) -> GT          | Exponentiate an element of GT by a scalar |
+| encode_g1(G1) -> bytes         | Encode an element of G1                   |
+| encode_g2(G2) -> bytes         | Encode an element of G2                   |
+| decode_g2(bytes) -> G2         | Decode an element of G2                   |
 
 ### Helper Functions
 
@@ -612,7 +612,7 @@ def encode_gt(v: GT) -> bytes:
     # elements from GT decompose into two elements x and y from the sixth-degree extension field GF(P^6)
     # elements from GF(P^6) decompose into three elements x, y, and z from the second-degree extension field GF(P^2)
     # elements from GF(P^2) decompose into two elements x and y from the finite field GF(P)
-    # GF(P) is the Galois field of order ORDER, called F_p in EIPs 196 and 197, consisting of integers modulo ORDER.
+    # GF(P) is the Galois field of order ORDER, consisting of integers modulo ORDER.
     ints: Sequence[int] = [
         v.x.x.x,
         v.x.x.y,
