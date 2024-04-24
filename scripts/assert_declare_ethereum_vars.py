@@ -27,6 +27,7 @@ FILES = [
     ('consensus/preset/gnosis/bellatrix.yaml', 'presets/mainnet/bellatrix.yaml'),
     ('consensus/preset/gnosis/capella.yaml', 'presets/mainnet/capella.yaml'),
     ('consensus/preset/gnosis/deneb.yaml', 'presets/mainnet/deneb.yaml'),
+    ('consensus/preset/gnosis/electra.yaml', 'presets/mainnet/electra.yaml'),
 ]
 
 ETHEREUM_SPEC_COMMIT_PREFIX = "ETHEREUM_SPEC_COMMIT: "
