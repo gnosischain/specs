@@ -71,7 +71,7 @@ def make_decryption_key_shares_message(
             identity=tx.identity,
             share=compute_decryption_key_share(
                 eon_secret_key_share,
-                tx.identity
+                tx.identity_preimage
             ),
         )
         for tx in txs
@@ -129,6 +129,7 @@ def check_decryption_key_shares_message(
         instance_id=key_shares_message.instanceID,
         eon=key_shares_message.eon,
         slot=key_shares_message.slot,
+        tx_pointer=key_shares_message.txPointer,
         identities=[share.identity for share in key_shares_message.shares],
         signature=key_shares_message.signature,
         keyper_address=keypers[key_shares_message.keyperIndex],
@@ -224,6 +225,7 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, thr
             instance_id=keys_message.instanceID,
             eon=keys_message.eon,
             slot=keys_message.slot,
+            tx_pointer=keys_message.txPointer,
             identities=[key.identity for key in keys_message.keys],
             signature=signature,
             keyper_address=keypers[signer_index],
@@ -312,7 +314,7 @@ class SequencedTransaction:
     eon: uint64
     encrypted_transaction: bytes
     gas_limit: int
-    identity: G1
+    identity_preimage: bytes
 
 def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequence[SequencedTransaction]:
     events = get_events(state, SEQUENCER_ADDRESS)
@@ -331,7 +333,7 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
             eon=event.args.eon,
             encrypted_transaction=event.args.encryptedTransaction,
             gas_limit=event.args.gasLimit,
-            identity=compute_identity(event.args.identityPrefix, event.args.sender),
+            identity_preimage=event.args.identityPrefix + event.args.sender,
         )
         txs.append(tx)
         total_gas += event.args.gasLimit
@@ -796,62 +798,62 @@ def decode_encrypted_message(b: bytes) -> EncryptedMessage:
 The following describes the signing for constructing the `DecryptionKeyShares` messages and the signature validation relevant for `DecryptionKeys` message. It uses the [SimpleSerialize (SSZ)](https://github.com/ethereum/consensus-specs/blob/v1.3.0/ssz/simple-serialize.md) container `SlotDecryptionIdentities`:
 
 ```python
-class DecryptionTrigger(Container):
-    slot: uint64
-    txPointer: uint64
-    identities_hash: uint64
-
 class SlotDecryptionIdentities(Container):
     instance_id: uint64
     eon: uint64
     keyper_index: uint64
     slot: uint64
     txPointer: uint64
-    identities: List[Bytes64, ceil(ENCRYPTED_GAS_LIMIT / 21000)]
+    identity_preimages: List[Bytes64, ceil(ENCRYPTED_GAS_LIMIT / 21000)]
 
 def generate_hash(
     instance_id: uint64,
     eon: uint64,
-    decryption_trigger: DecryptionTrigger,
-    identities: Sequence[G1],
+    slot: uint64,
+    tx_pointer: uint64,
+    identity_preimages: Sequence[Bytes64],
 ) -> Bytes32:
     sdi = SlotDecryptionIdentities(
         instance_id=instance_id,
         eon=eon,
-        slot=decryption_trigger.slot,
-        txPointer=decryption_trigger.txPointer,
-        identities=[encode_g1(identity) for identity for identities],
+        slot=slot,
+        txPointer=tx_pointer,
+        identity_preimages=identity_preimages,
     )
     return ssz.hash_tree_root(sdi)
 
 def compute_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
-    decryption_trigger: DecryptionTrigger,
-    identities: Sequence[G1],
+    slot: uint64,
+    tx_pointer: uint64,
+    identity_preimages: Sequence[Bytes64],
     keyper_private_key: ECDSAPrivkey,
 ) -> ECDSASignature:
     h = generate_hash(
         instance_id,
         eon,
-        txPointer,
-        identities,
+        slot,
+        tx_pointer,
+        identity_preimages,
     )
     return ecdsa.sign(keyper_private_key, h)
 
 def check_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
-    decryption_trigger: DecryptionTrigger,
-    identities: Sequence[G1],
+    slot: uint64,
+    txPointer: uint64,
+    identity_preimages: Sequence[Bytes64],
     signature: ECDSASignature,
     keyper_address: Address,
 ) -> bool:
     h = generate_hash(
         instance_id,
         eon,
-        decryption_trigger,
-        identities,
+        slot,
+        tx_pointer,
+        identity_preimages,
     )
     expected_pubkey = ecdsa.recover(h, signature)
     return keyper_address == eth.pubkey_to_address(expected_pubkey)
