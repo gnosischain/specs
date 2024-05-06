@@ -808,12 +808,14 @@ def generate_hash(
     instance_id: uint64,
     eon: uint64,
     slot: uint64,
+    txPointer: uint64
     identities: Sequence[G1],
 ) -> Bytes32:
     sdi = SlotDecryptionIdentities(
         instance_id=instance_id,
         eon=eon,
         slot=slot,
+        txPointer=txPointer,
         identities=[encode_g1(identity) for identity for identities],
     )
     return ssz.hash_tree_root(sdi)
@@ -822,6 +824,7 @@ def compute_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
     slot: uint64,
+    txPointer: uint64,
     identities: Sequence[G1],
     keyper_private_key: ECDSAPrivkey,
 ) -> ECDSASignature:
@@ -829,6 +832,7 @@ def compute_slot_decryption_identities_signature(
         instance_id,
         eon,
         slot,
+        txPointer,
         identities,
     )
     return ecdsa.sign(keyper_private_key, h)
@@ -837,6 +841,7 @@ def check_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
     slot: uint64,
+    txPointer: uint64,
     identities: Sequence[G1],
     signature: ECDSASignature,
     keyper_address: Address,
@@ -845,6 +850,7 @@ def check_slot_decryption_identities_signature(
         instance_id,
         eon,
         slot,
+        txPointer,
         identities,
     )
     expected_pubkey = ecdsa.recover(h, signature)
