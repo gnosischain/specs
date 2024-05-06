@@ -68,7 +68,7 @@ def make_decryption_key_shares_message(
 ) -> DecryptionKeyShares:
     shares = [
         KeyShare(
-            identity=tx.identity,
+            identity=compute_identity(tx.identity_preimage),
             share=compute_decryption_key_share(
                 eon_secret_key_share,
                 tx.identity_preimage
@@ -250,7 +250,7 @@ If a registered validator is selected as the block proposer for slot `slot`, the
 Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill.
 
 - `e.args.eon == keys_message.eon` and
-- `compute_identity(e.args.identityPrefix, keys_message.sender) == key.identity`.
+- `compute_identity(e.args.identityPrefix + keys_message.sender) == key.identity`.
 
 The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
@@ -276,7 +276,7 @@ The server exposes a method `eth_sendRawTransaction` that behaves differently to
 
 If the sender of `tx` has insufficient funds to pay the transaction fee or if the sender's nonce does not match the account nonce, the server responds with an error with code `-32000`.
 
-Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(slot + keyper_set_change_lookahead)` where `slot` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix, address)`.
+Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(slot + keyper_set_change_lookahead)` where `slot` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix + address)`.
 
 Finally, the server creates a transaction `submit_tx` which calls `ISequencer(SEQUENCER_ADDRESS).submitEncryptedTransaction(eon, identity_prefix, address, encryptedTransaction, tx.gasLimit)`, sets gas limit and nonce as needed and chooses gas price parameters appropriate to the current network conditions. If the account identified by `address` has insufficient funds, it returns an error with code`-32603`. Otherwise, it signs `submit_tx` with `private_key`, broadcasts it to the network, and returns the hex encoded hash of `tx` to the user.
 
@@ -677,8 +677,8 @@ def invert(x: int) -> int:
 ### Key Generation
 
 ```python
-def compute_decryption_key_share(eon_secret_key_share: int, identity: G1) -> G1:
-    return g1_scalar_mult(identity, eon_secret_key_share)
+def compute_decryption_key_share(eon_secret_key_share: int, identity_preimage: bytes) -> G1:
+    return g1_scalar_mult(compute_identity(identity_preimage), eon_secret_key_share)
 
 def compute_decryption_key(keyper_indices: Sequence[int], shares: Sequence[G1]) -> G1:
     assert len(keyper_indices) == len(shares)
@@ -722,8 +722,8 @@ def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]
     keys = compute_block_keys(sigma, len(message_blocks))
     return [xor_blocks(key, block) for key, block in zip(keys, message_blocks)]
 
-def compute_identity(prefix: bytes, sender: bytes) -> G1:
-    h = keccak256(prefix + sender)
+def compute_identity(identity_preimage: bytes) -> G1:
+    h = keccak256(identity_preimage)
     i = int.from_bytes(h, "big")
     return g1_scalar_base_mult(i)
 ```
