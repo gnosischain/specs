@@ -796,6 +796,11 @@ def decode_encrypted_message(b: bytes) -> EncryptedMessage:
 The following describes the signing for constructing the `DecryptionKeyShares` messages and the signature validation relevant for `DecryptionKeys` message. It uses the [SimpleSerialize (SSZ)](https://github.com/ethereum/consensus-specs/blob/v1.3.0/ssz/simple-serialize.md) container `SlotDecryptionIdentities`:
 
 ```python
+class DecryptionTrigger(Container):
+    slot: uint64
+    txPointer: uint64
+    identities_hash: uint64
+
 class SlotDecryptionIdentities(Container):
     instance_id: uint64
     eon: uint64
@@ -807,15 +812,14 @@ class SlotDecryptionIdentities(Container):
 def generate_hash(
     instance_id: uint64,
     eon: uint64,
-    slot: uint64,
-    txPointer: uint64
+    decryption_trigger: DecryptionTrigger,
     identities: Sequence[G1],
 ) -> Bytes32:
     sdi = SlotDecryptionIdentities(
         instance_id=instance_id,
         eon=eon,
-        slot=slot,
-        txPointer=txPointer,
+        slot=decryption_trigger.slot,
+        txPointer=decryption_trigger.txPointer,
         identities=[encode_g1(identity) for identity for identities],
     )
     return ssz.hash_tree_root(sdi)
@@ -823,15 +827,13 @@ def generate_hash(
 def compute_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
-    slot: uint64,
-    txPointer: uint64,
+    decryption_trigger: DecryptionTrigger,
     identities: Sequence[G1],
     keyper_private_key: ECDSAPrivkey,
 ) -> ECDSASignature:
     h = generate_hash(
         instance_id,
         eon,
-        slot,
         txPointer,
         identities,
     )
@@ -840,8 +842,7 @@ def compute_slot_decryption_identities_signature(
 def check_slot_decryption_identities_signature(
     instance_id: uint64,
     eon: uint64,
-    slot: uint64,
-    txPointer: uint64,
+    decryption_trigger: DecryptionTrigger,
     identities: Sequence[G1],
     signature: ECDSASignature,
     keyper_address: Address,
@@ -849,8 +850,7 @@ def check_slot_decryption_identities_signature(
     h = generate_hash(
         instance_id,
         eon,
-        slot,
-        txPointer,
+        decryption_trigger,
         identities,
     )
     expected_pubkey = ecdsa.recover(h, signature)
