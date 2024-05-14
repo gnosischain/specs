@@ -804,14 +804,14 @@ class SlotDecryptionIdentities(Container):
     keyper_index: uint64
     slot: uint64
     txPointer: uint64
-    identity_preimages: List[Bytes64, ceil(ENCRYPTED_GAS_LIMIT / 21000)]
+    identity_preimages: List[Bytes52, ceil(ENCRYPTED_GAS_LIMIT / 21000)]
 
 def generate_hash(
     instance_id: uint64,
     eon: uint64,
     slot: uint64,
     tx_pointer: uint64,
-    identity_preimages: Sequence[Bytes64],
+    identity_preimages: Sequence[bytes],
 ) -> Bytes32:
     sdi = SlotDecryptionIdentities(
         instance_id=instance_id,
@@ -827,7 +827,7 @@ def compute_slot_decryption_identities_signature(
     eon: uint64,
     slot: uint64,
     tx_pointer: uint64,
-    identity_preimages: Sequence[Bytes64],
+    identity_preimages: Sequence[bytes],
     keyper_private_key: ECDSAPrivkey,
 ) -> ECDSASignature:
     h = generate_hash(
@@ -844,7 +844,7 @@ def check_slot_decryption_identities_signature(
     eon: uint64,
     slot: uint64,
     txPointer: uint64,
-    identity_preimages: Sequence[Bytes64],
+    identity_preimages: Sequence[bytes],
     signature: ECDSASignature,
     keyper_address: Address,
 ) -> bool:
