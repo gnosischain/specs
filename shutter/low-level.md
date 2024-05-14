@@ -247,10 +247,10 @@ Registered validators subscribe to `DecryptionKeys` messages from keypers on the
 
 If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
-Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill.
+Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill
 
 - `e.args.eon == keys_message.eon` and
-- `compute_identity(e.args.identityPrefix + keys_message.sender) == key.identity`.
+- `compute_identity(compute_identity_preimage(e.args.identityPrefix, keys_message.sender)) == key.identity`.
 
 The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
@@ -276,7 +276,7 @@ The server exposes a method `eth_sendRawTransaction` that behaves differently to
 
 If the sender of `tx` has insufficient funds to pay the transaction fee or if the sender's nonce does not match the account nonce, the server responds with an error with code `-32000`.
 
-Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(slot + keyper_set_change_lookahead)` where `slot` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(identity_prefix + address)`.
+Upon receiving the request, the server seeks the eon key `eon_key = getEonKey(eon)` with `eon = keyperSetManager.getKeyperSetIndexBySlot(slot + keyper_set_change_lookahead)` where `slot` is the current slot number. It also generates two random 32 byte strings `sigma` and `identity_prefix` using a cryptographically secure random number generator. Based on these values, it computes `encrypted_transaction = encrypt(b, identity, eon_key, sigma)` with `identity = compute_identity(compute_identity_preimage(identity_prefix, address))`.
 
 Finally, the server creates a transaction `submit_tx` which calls `ISequencer(SEQUENCER_ADDRESS).submitEncryptedTransaction(eon, identity_prefix, address, encryptedTransaction, tx.gasLimit)`, sets gas limit and nonce as needed and chooses gas price parameters appropriate to the current network conditions. If the account identified by `address` has insufficient funds, it returns an error with code`-32603`. Otherwise, it signs `submit_tx` with `private_key`, broadcasts it to the network, and returns the hex encoded hash of `tx` to the user.
 
@@ -333,7 +333,7 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
             eon=event.args.eon,
             encrypted_transaction=event.args.encryptedTransaction,
             gas_limit=event.args.gasLimit,
-            identity_preimage=event.args.identityPrefix + event.args.sender,
+            identity_preimage=compute_identity_preimage(event.args.identityPrefix, event.args.sender),
         )
         txs.append(tx)
         total_gas += event.args.gasLimit
@@ -721,6 +721,9 @@ def compute_c2(sigma: Block, r: int, identity: G1, eon_key: G2) -> Block:
 def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
     keys = compute_block_keys(sigma, len(message_blocks))
     return [xor_blocks(key, block) for key, block in zip(keys, message_blocks)]
+
+def compute_identity_preimage(prefix: bytes, sender: Address): bytes:
+    return prefix + sender
 
 def compute_identity(identity_preimage: bytes) -> G1:
     h = keccak256(identity_preimage)
