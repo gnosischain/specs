@@ -55,8 +55,8 @@ See [rationale](../research/dencun/eip-7514.md) for more details
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | 1706724940 | Jan-31-2024 18:15:40 +UTC | -     | 516608           |
-| Mainnet | 1710181820 | Mar-11-2024 18:30:20 +UTC | -     |     889856        |
+| Chiado  | 1706724940 | Jan-31-2024 18:15:40 +UTC | 0x5fbc16bc | 516608           |
+| Mainnet | 1710181820 | Mar-11-2024 18:30:20 +UTC | 0x1384dfc1 |     889856        |
 
 ### Readiness Checklist
 
