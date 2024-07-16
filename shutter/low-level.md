@@ -87,7 +87,7 @@ def make_decryption_key_shares_message(
         instanceID=INSTANCE_ID,
         eon=eon,
         keyperIndex=keyper_index,
-        slot=s,
+        slot=slot,
         txPointer=tx_pointer + len(txs),
         shares=shares,
         signature=signature,
@@ -202,13 +202,13 @@ The keyper processes the following `DecryptionKeys` messages:
 If a message `keys_message` is not valid according to `check_decryption_keys_message(keys_message, eon)` it is ignored:
 
 ```python
-def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, threshold: uint64) -> bool:
+def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon_public_key: bytes, threshold: uint64) -> bool:
     if keys_message.instanceID != INSTANCE_ID or keys_message.eon != eon:
         return False
 
     if not all(
         check_decryption_key(key_message.key, eon_public_key, key.identity)
-        for key in keys.keys
+        for key in keys_message.keys
     ):
         return False
 
@@ -219,6 +219,8 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, thr
         return False
     if len(keys_message.signatures) != threshold:
         return False
+
+    keypers: List[Address] = get_keyper_set()
 
     return all(
         check_slot_decryption_identities_signature(
@@ -556,17 +558,17 @@ This section defines the cryptographic primitives used in the protocol.
 
 ### Definitions
 
-| Type                                              | Description                                                                                                                      |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `G1`                                              | An element of the BN256-group G1 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197#definition-of-the-groups)        |
-| `G2`                                              | An element of the BN256-group G2 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197#definition-of-the-groups)        |
-| `GT`                                              | An element of the BN256-group GT, the range of the pairing function defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197) |
-| `Block`                                           | A 32-byte block                                                                                                                  |
-| `EncryptedMessage` = (G2, Block, Sequence[Block]) | An encrypted message                                                                                                             |
-| `ECDSAPrivkey`                                    | A secp256k1 ECDSA private key                                                                                                    |
-| `ECDSASignature`                                  | A secp256k1 ECDSA signature encoded in format `R ++ S ++ V` where `V` is `0` or `1`                                              |
-| `Address`                                         | An Ethereum address                                                                                                              |
-| `uint64`                                          | An unsigned 64 bit integer                                                                                                       |
+| Type                                              | Description                                                                         |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `G1`                                              | An element of the first BLS12-381 subgroup                                          |
+| `G2`                                              | An element of the second BLS12-381 subgroup                                         |
+| `GT`                                              | An element of the BLS12-381 pairing target group                                    |
+| `Block`                                           | A 32-byte block                                                                     |
+| `EncryptedMessage` = (G2, Block, Sequence[Block]) | An encrypted message                                                                |
+| `ECDSAPrivkey`                                    | A secp256k1 ECDSA private key                                                       |
+| `ECDSASignature`                                  | A secp256k1 ECDSA signature encoded in format `R ++ S ++ V` where `V` is `0` or `1` |
+| `Address`                                         | An Ethereum address                                                                 |
+| `uint64`                                          | An unsigned 64 bit integer                                                          |
 
 | Constant | Description                   | Value                                                                         |
 | -------- | ----------------------------- | ----------------------------------------------------------------------------- |
@@ -574,40 +576,45 @@ This section defines the cryptographic primitives used in the protocol.
 
 The following functions are considered prerequisites:
 
-| Function                       | Description                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| keccak256(bytes) -> Block      | The keccak-256 hash function                                                                    |
-| pairing(G1, G2) -> GT          | The pairing function specified in [EIP-197](https://eips.ethereum.org/EIPS/eip-197)             |
-| g1_add(G1, G1) -> G1           | Add two elements of G1                                                                          |
-| g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar                                                           |
-| g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar                                                        |
-| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar                                                        |
-| gt_scalar_mult(GT, int) -> GT  | Multiply an element of GT by a scalar                                                           |
-| encode_g1(G1) -> bytes         | Encode an element of G1 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
-| encode_g2(G2) -> bytes         | Encode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
-| decode_g2(bytes) -> G2         | Decode an element of G2 according to [EIP-197](https://eips.ethereum.org/EIPS/eip-197#encoding) |
+| Function                       | Description                               |
+| ------------------------------ | ----------------------------------------- |
+| keccak256(bytes) -> Block      | The keccak-256 hash function              |
+| pairing(G1, G2) -> GT          | The BLS12-381 pairing function            |
+| g1_add(G1, G1) -> G1           | Add two elements of G1                    |
+| g1_scalar_mult(G1, int) -> G1  | Multiply an element of G1 by a scalar     |
+| g1_scalar_base_mult(int) -> G1 | Multiply the generator of G1 by a scalar  |
+| g2_scalar_base_mult(int) -> G2 | Multiply the generator of G2 by a scalar  |
+| gt_exp(GT, int) -> GT          | Exponentiate an element of GT by a scalar |
+| encode_g1(G1) -> bytes         | Encode an element of G1                   |
+| encode_g2(G2) -> bytes         | Encode an element of G2                   |
+| decode_g2(bytes) -> G2         | Decode an element of G2                   |
 
 ### Helper Functions
 
 ```python
-def hash_blocks_to_int(blocks: Sequence[Block]) -> int:
-    p = b"".join(blocks)
-    h = keccak256(p)
+def hash1(preimage: bytes) -> G1:
+    h = keccak256(b"\x01" + preimage)
+    i = int.from_bytes(h, "big")
+    return g1_scalar_base_mult(i)
+
+def hash2(preimage: GT) -> Block:
+    b = encode_gt(preimage)
+    return keccak256(b"\x02" + b)
+
+def hash3(preimage: bytes) -> int:
+    h = keccak256(b"\x03" + preimage)
     i = int.from_bytes(h, "big")
     return i % ORDER
 
-def hash_gt_to_block(preimage: GT) -> Block:
-    b = encode_gt(preimage)
-    return hash_bytes_to_block(b)
+def hash4(preimage: bytes) -> Block:
+    return keccak256(b"\x04" + preimage)
 
-def hash_bytes_to_block(preimage: bytes) -> Block:
-    return keccak256(preimage)
 
 def encode_gt(v: GT) -> bytes:
     # elements from GT decompose into two elements x and y from the sixth-degree extension field GF(P^6)
     # elements from GF(P^6) decompose into three elements x, y, and z from the second-degree extension field GF(P^2)
     # elements from GF(P^2) decompose into two elements x and y from the finite field GF(P)
-    # GF(P) is the Galois field of order ORDER, called F_p in EIPs 196 and 197, consisting of integers modulo ORDER.
+    # GF(P) is the Galois field of order ORDER, consisting of integers modulo ORDER.
     ints: Sequence[int] = [
         v.x.x.x,
         v.x.x.y,
@@ -646,7 +653,7 @@ def compute_block_keys(sigma: Block, n: int) -> Sequence[Block]:
     suffix_length = max((n.bit_length() + 7) // 8, 1)
     suffixes = [n.to_bytes(suffix_length, "big")]
     preimages = [sigma + suffix for suffix in suffixes]
-    keys = [hash_bytes_to_block(preimage) for preimage in preimages]
+    keys = [hash4(preimage) for preimage in preimages]
     return keys
 
 def compute_lagrange_coefficients(indices: Sequence[int]) -> Sequence[int]:
@@ -706,16 +713,15 @@ def encrypt(message: bytes, identity: G1, eon_key: G2, sigma: Block) -> Encrypte
     )
 
 def compute_r(sigma: Block, message: bytes) -> int:
-    message_hash = hash_bytes_to_block(message)
-    return hash_blocks_to_int([sigma, message_hash])
+    return hash3(sigma + message)
 
 def compute_c1(r: int) -> G2:
     return g2_scalar_base_mult(r)
 
 def compute_c2(sigma: Block, r: int, identity: G1, eon_key: G2) -> Block:
     p = pairing(identity, eon_key)
-    preimage = gt_scalar_mult(p, r)
-    key = hash_gt_to_block(preimage)
+    preimage = gt_exp(p, r)
+    key = hash2(preimage)
     return xor_blocks(sigma, key)
 
 def compute_c3(message_blocks: Sequence[Block], sigma: Block) -> Sequence[Block]:
@@ -748,7 +754,7 @@ def decrypt(encrypted_message: EncryptedMessage, decryption_key: G1) -> bytes:
 def recover_sigma(encrypted_message: EncryptedMessage, decryption_key: G1) -> Block:
     c1, c2, _ = encrypted_message
     p = pairing(decryption_key, c1)
-    key = hash_gt_to_block(p)
+    key = hash2(p)
     sigma = xor_blocks(c2, key)
     return sigma
 ```
@@ -781,12 +787,17 @@ def encode_decryption_key(decryption_key: G1) -> bytes:
 def encode_decryption_key_share(decryption_key_share: G1) -> bytes:
     return encode_g1(decryption_key_share)
 
+CRYPTO_VERSION: byte = str(0x02).encode()
+
 def encode_encrypted_message(encrypted_message: EncryptedMessage) -> bytes:
     c1, c2, c3 = encrypted_message
-    return encode_g2(c1) + c2 + b"".join(c3)
+    return CRYPTO_VERSION + encode_g2(c1) + c2 + b"".join(c3)
 
 def decode_encrypted_message(b: bytes) -> EncryptedMessage:
+    version_id = b[0]
+    b = b[1:]
     assert len(b) > 4 * 32 + 32 + 32
+    assert version_id == CRYPTO_VERSION
     c1_bytes = b[:4 * 32]
     c2 = b[4 * 32: 5 * 32]
     c3_bytes = b[5 * 32:]

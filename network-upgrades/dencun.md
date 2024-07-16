@@ -2,7 +2,7 @@
 
 ## Included EIPs
 
-This hard fork activates all EIPs also activated on [Ethereum mainnet](https://eips.ethereum.org/EIPS/eip-7569).
+This hard fork activates all EIPs also activated on Ethereum mainnet, [hard-fork EIP](https://eips.ethereum.org/EIPS/eip-7569).
 Table below list differences if any.
 
 | EIP | Scope |   |
@@ -36,6 +36,8 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 | MAX_BLOB_GAS_PER_BLOCK | 262144 |
 | BLOB_GASPRICE_UPDATE_FRACTION | 1112826 |
 
+See [rationale](../research/dencun/eip-7514.md) for chosen blob gas parameters.
+
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 
 Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT` value of 2 provides a good trade-off to:
@@ -43,7 +45,7 @@ Gnosis chain has both a lower `CHURN_LIMIT_QUOTIENT` and faster epoch times. A `
 - Increase the minimum time for a 2/3 malicious take-over to 150 days at current validator set sizes
 - Allow validator set growth to prevent long queues unless there's exceptional demand
 
-See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
+See [rationale](../research/dencun/eip-7514.md) for more details
 
 | Constant | Value |
 | -------- | ----- |
@@ -53,8 +55,8 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | 1706724940 | Wed Jan 31 2024 18:15:40 GMT+0000 | -         | 516608           |
-| Mainnet | TBD | TBD | -         | TBD             |
+| Chiado  | 1706724940 | Jan-31-2024 18:15:40 +UTC | 0x5fbc16bc | 516608           |
+| Mainnet | 1710181820 | Mar-11-2024 18:30:20 +UTC | 0x1384dfc1 |     889856        |
 
 ### Readiness Checklist
 
@@ -63,8 +65,8 @@ See https://hackmd.io/@5qNKk0aeQlygax4hX3rVXw/SJfbSY-ep for more details
 - [x] Client Integration Testing
   - [x] Deploy a Client Integration Testnet
   - [x] Integration Tests
-- [ ] Select Fork Triggers
+- [x] Select Fork Triggers
   - [x] Chiado
-  - [ ] Mainnet
-- [ ] Deploy Clients
-- [ ] Activate Fork
+  - [x] Mainnet
+- [x] Deploy Clients
+- [x] Activate Fork
