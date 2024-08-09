@@ -153,16 +153,22 @@ Once the keyper has processed `threshold` valid messages `share_messages` with d
 message DecryptionKeys {
     uint64 instanceID = 1;
     uint64 eon = 2;
-    uint64 slot = 3;
-    uint64 txPointer = 4;
-    repeated Key keys = 5;
-    repeated uint64 signerIndices = 6;
-    repeated bytes signatures = 7;
+    repeated Key keys = 3;
+    oneof extra {
+        GnosisDecryptionKeysExtra extra = 4;
+    }
 }
 
 message Key {
     bytes identity = 1;
     bytes key = 2;
+}
+
+message GnosisDecryptionKeysExtra {
+    uint64 slot = 1;
+    uint64 tx_pointer = 2;
+    repeated uint64 signerIndices = 3;
+    repeated bytes signatures = 4;
 }
 ```
 
@@ -191,15 +197,16 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
     return DecryptionKeys(
         instanceID=share_messages[0].instanceID,
         eon=share_messages[0].eon,
-        slot=share_messages[0].extra.slot,
-        txPointer=share_messages[0].extra.txPointer,
-        keys=keys,
-        signerIndices=signer_indices,
-        signatures=signatures,
+        extra=GnosisDecryptionKeysExtra(
+            slot=share_messages[0].extra.slot,
+            tx_pointer=share_messages[0].extra.txPointer,
+            signerIndices=signer_indices,
+            signatures=signatures,
+        ),
     )
 ```
 
-They broadcast the message, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `slot`, and `keys`.
+They broadcast the message, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `extra.slot`, and `keys`.
 
 ##### Decryption Keys Processing
 
@@ -222,12 +229,12 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon
     ):
         return False
 
-    unique_signer_indices = set(keys_message.signerIndices)
-    if len(keys_message.signerIndices) != unique_signer_indices:
+    unique_signer_indices = set(keys_message.extra.signerIndices)
+    if len(keys_message.extra.signerIndices) != unique_signer_indices:
         return False
-    if len(keys_message.signatures) != len(keys_message.signerIndices):
+    if len(keys_message.extra.signatures) != len(keys_message.extra.signerIndices):
         return False
-    if len(keys_message.signatures) != threshold:
+    if len(keys_message.extra.signatures) != threshold:
         return False
 
     keypers: List[Address] = get_keyper_set()
@@ -236,17 +243,17 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon
         check_slot_decryption_identities_signature(
             instance_id=keys_message.instanceID,
             eon=keys_message.eon,
-            slot=keys_message.slot,
-            tx_pointer=keys_message.txPointer,
+            slot=keys_message.extra.slot,
+            tx_pointer=keys_message.extra.txPointer,
             identities=[key.identity for key in keys_message.keys],
             signature=signature,
             keyper_address=keypers[signer_index],
         )
-        for signer_index, signature in zip(keys_message.signerIndices, keys_message.signatures)
+        for signer_index, signature in zip(keys_message.extra.signerIndices, keys_message.extra.signatures)
     )
 ```
 
-Otherwise, the keyper updates its local `tx_pointer` to `max(tx_pointer, keys_message.txPointer)`.
+Otherwise, the keyper updates its local `tx_pointer` to `max(tx_pointer, keys_message.extra.txPointer)`.
 
 ### Validator
 
@@ -257,7 +264,7 @@ Validators keep track if they are registered in the Validator Registry, i.e., `v
 
 Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `tbd` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
 
-If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
+If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.extra.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
 Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill
 
