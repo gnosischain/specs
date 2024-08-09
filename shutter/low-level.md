@@ -310,11 +310,18 @@ The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implemen
 interface ISequencer {
     function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, bytes memory encryptedTransaction, uint256 gasLimit) external;
 
-    event TransactionSubmitted(uint64 eon, bytes32 identityPrefix, address sender, bytes encryptedTransaction, uint256 gasLimit);
+    event TransactionSubmitted(
+        uint64 eon,
+        uint64 txIndex,
+        bytes32 identityPrefix,
+        address sender,
+        bytes encryptedTransaction,
+        uint256 gasLimit
+    );
 }
 ```
 
-`submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, msg.sender, identityPrefix, encryptedTransaction, gasLimit)`.
+`submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, txIndex, msg.sender, identityPrefix, encryptedTransaction, gasLimit)` where `txIndex` is the number of emitted `TransactionSubmitted` events emitted so far with eon `eon`.
 
 The constant `ENCRYPTED_GAS_LIMIT` defines how much gas is earmarked for encrypted transactions. The function `get_next_transactions` retrieves a set of transactions from the queue:
 
@@ -324,6 +331,7 @@ import dataclasses
 @dataclasses.dataclass
 class SequencedTransaction:
     eon: uint64
+    index: uint64
     encrypted_transaction: bytes
     gas_limit: int
     identity_preimage: bytes
@@ -343,6 +351,7 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
             break
         tx = SequencedTransaction(
             eon=event.args.eon,
+            index=event.args.txIndex,
             encrypted_transaction=event.args.encryptedTransaction,
             gas_limit=event.args.gasLimit,
             identity_preimage=compute_identity_preimage(event.args.identityPrefix, event.args.sender),
