@@ -29,11 +29,11 @@ At all times, the keyper monitors the chain, both its execution and consensus la
 
 Lastly, they monitor the `validatorRegistry = IValidatorRegistry(VALIDATOR_REGISTRY_ADDRESS)` for the set of indices of the participating validators `participating_validator_indices = get_participating_validators(state)` where `state` refers to the chain state.
 
-#### Slot Processing
+#### Decryption Key Generation
 
-At the beginning of each slot `slot`, the keyper checks if `keyper_address` is an element of `keypers`. If not, they suspend slot processing until the start of the next slot.
+Keypers trigger decryption key generation for slot `slot` when they receive the block in slot `slot - 1` or when `1 / 3` of slot `slot - 1` has passed, whatever happens first. They suspend decryption key generation for this slot if `keyper_address` is not an element of `keypers`.
 
-Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend slot processing until the start of the next slot.
+Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend decryption key generation for this slot.
 
 Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
 
