@@ -214,7 +214,6 @@ The keyper processes the following `DecryptionKeys` messages:
 
 - Messages they received on the p2p network.
 - Messages they produced and broadcast themselves.
-- Messages they received as the `message` argument of `DecryptionProgressSubmitted` events emitted by the sequencer contract at `SEQUENCER_ADDRESS`.
 
 If a message `keys_message` is not valid according to `check_decryption_keys_message(keys_message, eon)` it is ignored:
 
@@ -273,9 +272,7 @@ Once `keys_message` is received, the validator fetches those `TransactionSubmitt
 
 The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
-With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block` with transactions `txs`. `txs[0]` makes the contract at `SEQUENCER_ADDRESS` to emit the event `DecryptionProgressSubmitted` exactly once with argument `message = keys_message`.
-
-Transactions `txs[j]` for `j >= 1` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
+With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block`. The transactions `txs` in `block` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
 
 - Inserting it in accordance with the ordering property and removing all following transactions would make the block invalid.
 - Its gas limit is different from the gas limit specified by the corresponding `TransactionSubmitted` event `tx_submitted_event` in the argument `e.args.gasLimit`.
@@ -312,16 +309,12 @@ The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implemen
 ```solidity
 interface ISequencer {
     function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, bytes memory encryptedTransaction, uint256 gasLimit) external;
-    function submitDecryptionProgress(bytes memory message) external;
 
     event TransactionSubmitted(uint64 eon, bytes32 identityPrefix, address sender, bytes encryptedTransaction, uint256 gasLimit);
-    event DecryptionProgressSubmitted(bytes message);
 }
 ```
 
 `submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, msg.sender, identityPrefix, encryptedTransaction, gasLimit)`.
-
-`submitDecryptionProgress(message)` emits `DecryptionProgressSubmitted(message)`.
 
 The constant `ENCRYPTED_GAS_LIMIT` defines how much gas is earmarked for encrypted transactions. The function `get_next_transactions` retrieves a set of transactions from the queue:
 
