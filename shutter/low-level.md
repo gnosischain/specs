@@ -35,7 +35,13 @@ Keypers trigger decryption key generation for slot `slot` when they receive the 
 
 Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend decryption key generation for this slot.
 
-Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
+Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is
+
+- `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager),
+- `keys_message.extra.txPointer + len(keys_message.keys) - 1` where `keys_message` is the latest received or locally generated, valid `DecryptionKeys` message if keys have been received regularly recently,
+- or otherwise `event.txIndex + 1`, where `event` is the latest `TransactionSubmitted` event emitted by the contract at `SEQUENCER_ADDRESS` with `event.eon = eon` (or `0` if no such event as been emitted yet).
+
+Note that the condition "keys have been received regularly recently" is to be defined locally at the discretion of the keyper.
 
 Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
 
@@ -98,7 +104,7 @@ def make_decryption_key_shares_message(
         shares=shares,
         extra=GnosisDecryptionKeySharesExtra(
             slot=slot,
-            tx_pointer=tx_pointer + len(txs),
+            tx_pointer=tx_pointer,
             signature=signature,
         ),
     )
@@ -220,14 +226,9 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
 
 They broadcast the message, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `extra.slot`, and `keys`.
 
-##### Decryption Keys Processing
+##### Decryption Keys Message Validation
 
-The keyper processes the following `DecryptionKeys` messages:
-
-- Messages they received on the p2p network.
-- Messages they produced and broadcast themselves.
-
-If a message `keys_message` is not valid according to `check_decryption_keys_message(keys_message, eon)` it is ignored:
+The keyper validates `DecryptionKeys` messages `keys_message` received on the p2p network according to `check_decryption_keys_message(keys_message, eon)`:
 
 ```python
 def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon_public_key: bytes, threshold: uint64) -> bool:
@@ -263,8 +264,6 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon
         for signer_index, signature in zip(keys_message.extra.signerIndices, keys_message.extra.signatures)
     )
 ```
-
-Otherwise, the keyper updates its local `tx_pointer` to `max(tx_pointer, keys_message.extra.txPointer)`.
 
 ### Validator
 
