@@ -265,12 +265,13 @@ Registered validators subscribe to `DecryptionKeys` messages from keypers on the
 
 If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.extra.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
-Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill
+Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that fulfill
 
-- `e.args.eon == keys_message.eon` and
-- `compute_identity_preimage(e.args.identityPrefix, e.args.sender) == key.identity`.
+- `e.args.eon == keys_message.eon`,
+- `e.args.index >= keys_message.extra.txPointer`, and
+- `e.args.index < keys_message.extra.txPointer + len(keys_message.keys)`.
 
-The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
+The events are fetched in the order the events were emitted. For each `tx_submitted_event`, they get the corresponding `key` from `keys_message.keys`, identified by `key.identity = compute_identity(e.args.identityPrefix, e.args.sender)`. If no such key exists, they propose an empty block. Otherwise, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
 With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block`. The transactions `txs` in `block` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
 
