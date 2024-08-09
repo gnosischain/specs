@@ -269,7 +269,7 @@ If a registered validator is selected as the block proposer for slot `slot`, the
 Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill
 
 - `e.args.eon == keys_message.eon` and
-- `compute_identity(compute_identity_preimage(e.args.identityPrefix, keys_message.sender)) == key.identity`.
+- `compute_identity_preimage(e.args.identityPrefix, e.args.sender) == key.identity`.
 
 The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
