@@ -73,6 +73,8 @@ def make_decryption_key_shares_message(
     keyper_private_key: ECDSAPrivkey,
 ) -> DecryptionKeyShares:
     shares = [
+        make_dummy_decryption_key_share(eon_secret_key_share, slot),
+    ] + [
         KeyShare(
             identity=compute_identity(tx.identity_preimage),
             share=compute_decryption_key_share(
@@ -99,6 +101,16 @@ def make_decryption_key_shares_message(
             tx_pointer=tx_pointer + len(txs),
             signature=signature,
         ),
+    )
+
+def make_dummy_decryption_key_share(eon_secret_key_share: int, slot: uint64) -> KeyShare:
+    dummy_identity_preimage = slot.to_bytes(32 + 20, byteorder="big")
+    return KeyShare(
+        identity=dummy_identity_preimage,
+        share=compute_decryption_key_share(
+            eon_secret_key_share,
+            dummy_identity_preimage
+        )
     )
 ```
 
@@ -269,7 +281,7 @@ Once `keys_message` is received, the validator fetches those `TransactionSubmitt
 
 - `e.args.eon == keys_message.eon`,
 - `e.args.index >= keys_message.extra.txPointer`, and
-- `e.args.index < keys_message.extra.txPointer + len(keys_message.keys)`.
+- `e.args.index < keys_message.extra.txPointer + len(keys_message.keys) - 1`.
 
 The events are fetched in the order the events were emitted. For each `tx_submitted_event`, they get the corresponding `key` from `keys_message.keys`, identified by `key.identity = compute_identity(e.args.identityPrefix, e.args.sender)`. If no such key exists, they propose an empty block. Otherwise, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
