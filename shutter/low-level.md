@@ -42,17 +42,23 @@ Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` mess
 ```protobuf
 message DecryptionKeyShares {
     uint64 instanceID = 1;
-    uint64 eon = 2;
-    uint64 keyperIndex = 3;
-    uint64 slot = 4;
-    uint64 txPointer = 5;
-    repeated KeyShare shares = 6;
-    bytes signature = 7;
+    uint64 eon = 4;
+    uint64 keyperIndex = 5;
+    repeated KeyShare shares = 9;
+    oneof extra {
+        GnosisDecryptionKeySharesExtra gnosis = 10;
+    }
 }
 
 message KeyShare {
     bytes identity = 1;
     bytes share = 2;
+}
+
+message GnosisDecryptionKeySharesExtra {
+    uint64 slot = 1;
+    uint64 tx_pointer = 2;
+    bytes signature = 3;
 }
 ```
 
@@ -87,10 +93,12 @@ def make_decryption_key_shares_message(
         instanceID=INSTANCE_ID,
         eon=eon,
         keyperIndex=keyper_index,
-        slot=slot,
-        txPointer=tx_pointer + len(txs),
         shares=shares,
-        signature=signature,
+        extra=GnosisDecryptionKeySharesExtra(
+            slot=slot,
+            tx_pointer=tx_pointer + len(txs),
+            signature=signature,
+        ),
     )
 ```
 
@@ -107,6 +115,9 @@ def check_decryption_key_shares_message(
     keypers: Sequence[Address],
     eon_public_key_shares: Sequence[G2],
 ) -> bool:
+    if not isinstance(key_shares_message.extra, GnosisDecryptionKeySharesExtra):
+        return False
+
     if (
         key_shares_message.instanceID != INSTANCE_ID or
         key_shares_message.eon != eon
@@ -128,15 +139,15 @@ def check_decryption_key_shares_message(
     return check_slot_decryption_identities_signature(
         instance_id=key_shares_message.instanceID,
         eon=key_shares_message.eon,
-        slot=key_shares_message.slot,
-        tx_pointer=key_shares_message.txPointer,
+        slot=key_shares_message.extra.slot,
+        tx_pointer=key_shares_message.extra.txPointer,
         identities=[share.identity for share in key_shares_message.shares],
-        signature=key_shares_message.signature,
+        signature=key_shares_message.extra.signature,
         keyper_address=keypers[key_shares_message.keyperIndex],
     )
 ```
 
-Once the keyper has processed `threshold` valid messages `share_messages` with distinct `keyperIndex` as well as equal `slot`, `txPointer`, `len(shares)`, and `shares[j].identity` for all `j`, they generate a `DecryptionKeys` message `make_keys_message(share_messages)` as follows:
+Once the keyper has processed `threshold` valid messages `share_messages` with distinct `keyperIndex` as well as equal `extra.slot`, `extra.txPointer`, `len(shares)`, and `shares[j].identity` for all `j`, they generate a `DecryptionKeys` message `make_keys_message(share_messages)` as follows:
 
 ```protobuf
 message DecryptionKeys {
@@ -171,9 +182,8 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
         for identity, raw_key in zip(identities, raw_keys)
     ]
 
-
     signer_indices_and_signatures = sorted([
-        (m.keyperIndex, m.signature) for m in share_messages
+        (m.keyperIndex, m.extra.signature) for m in share_messages
     ])
     signer_indices = [i for i, _ in signer_indices_and_signatures]
     signatures = [s for _, s in signer_indices_and_signatures]
@@ -181,8 +191,8 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
     return DecryptionKeys(
         instanceID=share_messages[0].instanceID,
         eon=share_messages[0].eon,
-        slot=share_messages[0].slot,
-        txPointer=share_messages[0].txPointer,
+        slot=share_messages[0].extra.slot,
+        txPointer=share_messages[0].extra.txPointer,
         keys=keys,
         signerIndices=signer_indices,
         signatures=signatures,
