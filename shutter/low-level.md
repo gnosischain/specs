@@ -20,7 +20,7 @@ Each keyper has a private key `keyper_private_key` to an Ethereum address `keype
 
 #### Chain Monitoring
 
-At all times, the keyper monitors the chain. They keep track of the current slot number `slot`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
+At all times, the keyper monitors the chain, both its execution and consensus layer. They keep track of the current slot number `slot`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
 
 - the current eon `eon = keyperSetManager.getKeyperSetIndexBySlot(slot)`,
 - the active keyper set contract `keyperSetContract = IKeyperSet(keyperSetManager.getKeyperSetAddress(eon))`,
