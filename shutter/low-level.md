@@ -514,7 +514,7 @@ interface IKeyBroadcastContract {
 
 1. The contract has already stored a key for the given eon.
 2. `key` is empty.
-3. `IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS).getKeyperSetAddress(eon)` reverts or returns an address different from `msg.sender`.
+3. `IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS).getKeyperSetAddress(eon).isAllowedToBroadcastEonKey(msg.sender)` reverts or returns `false`.
 
 Otherwise, it stores `key` in a way that it is indexable by `eon` and emits the event `EonKeyBroadcast(eon, key)`.
 
@@ -572,6 +572,7 @@ interface IKeyperSet {
     function getMember(uint64 index) external view returns (address);
     function getMembers() external view returns (address[] memory);
     function getThreshold() external view returns (uint64);
+    function isAllowedToBroadcastEonKey(address account) external view returns (bool);
 }
 ```
 
