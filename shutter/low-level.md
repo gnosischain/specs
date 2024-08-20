@@ -43,7 +43,7 @@ Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, 
 
 Note that the condition "keys have been received regularly recently" is to be defined locally at the discretion of the keyper.
 
-Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
+Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` on the topic `"decryptionKeyShares"` as follows:
 
 ```protobuf
 message DecryptionKeyShares {
@@ -124,7 +124,7 @@ def make_dummy_decryption_key_share(eon_secret_key_share: int, slot: uint64) -> 
 
 ##### Decryption Key Shares Processing
 
-The keyper processes `DecryptionKeyShares` messages that they receive from the p2p network as well as those that they produce themselves. They ignore messages that are not valid according to `check_decryption_key_shares_message(key_shares_message, eon, keypers, eon_public_key_shares)`:
+The keyper processes `DecryptionKeyShares` messages that they receive from the p2p network on the topic `"decryptionKeyShares"` as well as those that they produce themselves. They ignore messages that are not valid according to `check_decryption_key_shares_message(key_shares_message, eon, keypers, eon_public_key_shares)`:
 
 ```python
 def check_decryption_key_shares_message(
@@ -224,7 +224,7 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
     )
 ```
 
-They broadcast the message, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `extra.slot`, and `keys`.
+They broadcast the message on the topic `"decryptionKeys"`, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `extra.slot`, and `keys`.
 
 ##### Decryption Keys Message Validation
 
@@ -272,7 +272,7 @@ Validators keep track if they are registered in the Validator Registry, i.e., `v
 - `validator_index` is the index of the validator in the Beacon Chain,
 - `state` is the current Beacon Chain state, and
 
-Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `tbd` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
+Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `"decryptionKeys"` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
 
 If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.extra.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
