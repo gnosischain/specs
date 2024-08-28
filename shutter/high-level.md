@@ -28,7 +28,7 @@ Validators can opt into participating in the protocol by registering in the _val
 
 Instead of sending a transaction in plaintext, users may encrypt it. The encrypted blob has to be annotated with the transaction hash, the gas limit, and the current eon. The resulting tuple is wrapped in an envelope transaction that submits it to the _sequencer contract_. Users can also encrypt "bundles" of transactions all at once.
 
-The encryption function takes the eon key and an identity value as parameters. The identity value is derived from the transaction hash and the sender address of the envelope transaction. Note that the identity value can be reconstructed from the envelope transaction, but cannot be forged without control over the sender account.
+The encryption function takes the eon key and an identity value as parameters. The identity value is derived from a user defined random value and the sender address of the envelope transaction. Note that the identity value can be reconstructed from the envelope transaction, but cannot be forged without control over the sender account.
 
 The sequencer contract manages a set of transaction queues, one for each eon. Upon submission, encrypted transactions are appended to the end of the queue corresponding to the given eon. Submitting a transaction requires burning the specified amount of gas at the current base fee price.
 

@@ -20,7 +20,7 @@ Each keyper has a private key `keyper_private_key` to an Ethereum address `keype
 
 #### Chain Monitoring
 
-At all times, the keyper monitors the chain. They keep track of the current slot number `slot`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
+At all times, the keyper monitors the chain, both its execution and consensus layer. They keep track of the current slot number `slot`. They also watch the `keyperSetManager = IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS)` for
 
 - the current eon `eon = keyperSetManager.getKeyperSetIndexBySlot(slot)`,
 - the active keyper set contract `keyperSetContract = IKeyperSet(keyperSetManager.getKeyperSetAddress(eon))`,
@@ -29,30 +29,42 @@ At all times, the keyper monitors the chain. They keep track of the current slot
 
 Lastly, they monitor the `validatorRegistry = IValidatorRegistry(VALIDATOR_REGISTRY_ADDRESS)` for the set of indices of the participating validators `participating_validator_indices = get_participating_validators(state)` where `state` refers to the chain state.
 
-#### Slot Processing
+#### Decryption Key Generation
 
-At the beginning of each slot `slot`, the keyper checks if `keyper_address` is an element of `keypers`. If not, they suspend slot processing until the start of the next slot.
+Keypers trigger decryption key generation for slot `slot` when they receive the block in slot `slot - 1` or when `1 / 3` of slot `slot - 1` has passed, whatever happens first. They suspend decryption key generation for this slot if `keyper_address` is not an element of `keypers`.
 
-Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend slot processing until the start of the next slot.
+Otherwise, they check if the block proposer of slot `slot` is registered in the Validator Registry, i.e., if their validator index is an element of `participating_validator_indices`. If they are not, they suspend decryption key generation for this slot.
 
-Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is a local variable. `tx_pointer` is `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager). `tx_pointer` is updated as described in the [Decryption Keys Processing section](#decryption-keys-processing).
+Otherwise, they fetch the transactions `txs = get_next_transactions(state, eon, tx_pointer)` where `tx_pointer` is
 
-Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` as follows:
+- `0` for the start slot of `eon` as defined in the [Keyper Set Manager section](#keyper-set-manager),
+- `keys_message.extra.txPointer + len(keys_message.keys) - 1` where `keys_message` is the latest received or locally generated, valid `DecryptionKeys` message if keys have been received regularly recently,
+- or otherwise `event.txIndex + 1`, where `event` is the latest `TransactionSubmitted` event emitted by the contract at `SEQUENCER_ADDRESS` with `event.eon = eon` (or `0` if no such event as been emitted yet).
+
+Note that the condition "keys have been received regularly recently" is to be defined locally at the discretion of the keyper.
+
+Based on `txs`, the keyper generates and broadcasts a `DecryptionKeyShares` message `make_decryption_key_shares_message(eon, slot, keyper_index, tx_pointer, txs, eon_secret_key_share, keyper_private_key)` with `keyper_index = keypers.index(keyper_address)` on the topic `"decryptionKeyShares"` as follows:
 
 ```protobuf
 message DecryptionKeyShares {
     uint64 instanceID = 1;
-    uint64 eon = 2;
-    uint64 keyperIndex = 3;
-    uint64 slot = 4;
-    uint64 txPointer = 5;
-    repeated KeyShare shares = 6;
-    bytes signature = 7;
+    uint64 eon = 4;
+    uint64 keyperIndex = 5;
+    repeated KeyShare shares = 9;
+    oneof extra {
+        GnosisDecryptionKeySharesExtra gnosis = 10;
+    }
 }
 
 message KeyShare {
     bytes identity = 1;
     bytes share = 2;
+}
+
+message GnosisDecryptionKeySharesExtra {
+    uint64 slot = 1;
+    uint64 tx_pointer = 2;
+    bytes signature = 3;
 }
 ```
 
@@ -67,6 +79,8 @@ def make_decryption_key_shares_message(
     keyper_private_key: ECDSAPrivkey,
 ) -> DecryptionKeyShares:
     shares = [
+        make_dummy_decryption_key_share(eon_secret_key_share, slot),
+    ] + [
         KeyShare(
             identity=compute_identity(tx.identity_preimage),
             share=compute_decryption_key_share(
@@ -87,10 +101,22 @@ def make_decryption_key_shares_message(
         instanceID=INSTANCE_ID,
         eon=eon,
         keyperIndex=keyper_index,
-        slot=slot,
-        txPointer=tx_pointer + len(txs),
         shares=shares,
-        signature=signature,
+        extra=GnosisDecryptionKeySharesExtra(
+            slot=slot,
+            tx_pointer=tx_pointer,
+            signature=signature,
+        ),
+    )
+
+def make_dummy_decryption_key_share(eon_secret_key_share: int, slot: uint64) -> KeyShare:
+    dummy_identity_preimage = slot.to_bytes(32 + 20, byteorder="big")
+    return KeyShare(
+        identity=dummy_identity_preimage,
+        share=compute_decryption_key_share(
+            eon_secret_key_share,
+            dummy_identity_preimage
+        )
     )
 ```
 
@@ -98,7 +124,7 @@ def make_decryption_key_shares_message(
 
 ##### Decryption Key Shares Processing
 
-The keyper processes `DecryptionKeyShares` messages that they receive from the p2p network as well as those that they produce themselves. They ignore messages that are not valid according to `check_decryption_key_shares_message(key_shares_message, eon, keypers, eon_public_key_shares)`:
+The keyper processes `DecryptionKeyShares` messages that they receive from the p2p network on the topic `"decryptionKeyShares"` as well as those that they produce themselves. They ignore messages that are not valid according to `check_decryption_key_shares_message(key_shares_message, eon, keypers, eon_public_key_shares)`:
 
 ```python
 def check_decryption_key_shares_message(
@@ -107,6 +133,9 @@ def check_decryption_key_shares_message(
     keypers: Sequence[Address],
     eon_public_key_shares: Sequence[G2],
 ) -> bool:
+    if not isinstance(key_shares_message.extra, GnosisDecryptionKeySharesExtra):
+        return False
+
     if (
         key_shares_message.instanceID != INSTANCE_ID or
         key_shares_message.eon != eon
@@ -128,30 +157,36 @@ def check_decryption_key_shares_message(
     return check_slot_decryption_identities_signature(
         instance_id=key_shares_message.instanceID,
         eon=key_shares_message.eon,
-        slot=key_shares_message.slot,
-        tx_pointer=key_shares_message.txPointer,
+        slot=key_shares_message.extra.slot,
+        tx_pointer=key_shares_message.extra.txPointer,
         identities=[share.identity for share in key_shares_message.shares],
-        signature=key_shares_message.signature,
+        signature=key_shares_message.extra.signature,
         keyper_address=keypers[key_shares_message.keyperIndex],
     )
 ```
 
-Once the keyper has processed `threshold` valid messages `share_messages` with distinct `keyperIndex` as well as equal `slot`, `txPointer`, `len(shares)`, and `shares[j].identity` for all `j`, they generate a `DecryptionKeys` message `make_keys_message(share_messages)` as follows:
+Once the keyper has processed `threshold` valid messages `share_messages` with distinct `keyperIndex` as well as equal `extra.slot`, `extra.txPointer`, `len(shares)`, and `shares[j].identity` for all `j`, they generate a `DecryptionKeys` message `make_keys_message(share_messages)` as follows:
 
 ```protobuf
 message DecryptionKeys {
     uint64 instanceID = 1;
     uint64 eon = 2;
-    uint64 slot = 3;
-    uint64 txPointer = 4;
-    repeated Key keys = 5;
-    repeated uint64 signerIndices = 6;
-    repeated bytes signatures = 7;
+    repeated Key keys = 3;
+    oneof extra {
+        GnosisDecryptionKeysExtra extra = 4;
+    }
 }
 
 message Key {
     bytes identity = 1;
     bytes key = 2;
+}
+
+message GnosisDecryptionKeysExtra {
+    uint64 slot = 1;
+    uint64 tx_pointer = 2;
+    repeated uint64 signerIndices = 3;
+    repeated bytes signatures = 4;
 }
 ```
 
@@ -171,9 +206,8 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
         for identity, raw_key in zip(identities, raw_keys)
     ]
 
-
     signer_indices_and_signatures = sorted([
-        (m.keyperIndex, m.signature) for m in share_messages
+        (m.keyperIndex, m.extra.signature) for m in share_messages
     ])
     signer_indices = [i for i, _ in signer_indices_and_signatures]
     signatures = [s for _, s in signer_indices_and_signatures]
@@ -181,25 +215,20 @@ def make_keys_message(share_messages: Sequence[DecryptionKeyShares]) -> Decrypti
     return DecryptionKeys(
         instanceID=share_messages[0].instanceID,
         eon=share_messages[0].eon,
-        slot=share_messages[0].slot,
-        txPointer=share_messages[0].txPointer,
-        keys=keys,
-        signerIndices=signer_indices,
-        signatures=signatures,
+        extra=GnosisDecryptionKeysExtra(
+            slot=share_messages[0].extra.slot,
+            tx_pointer=share_messages[0].extra.txPointer,
+            signerIndices=signer_indices,
+            signatures=signatures,
+        ),
     )
 ```
 
-They broadcast the message, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `slot`, and `keys`.
+They broadcast the message on the topic `"decryptionKeys"`, unless they have already received a valid `DecryptionKeys` message with equal `instanceID`, `eon`, `extra.slot`, and `keys`.
 
-##### Decryption Keys Processing
+##### Decryption Keys Message Validation
 
-The keyper processes the following `DecryptionKeys` messages:
-
-- Messages they received on the p2p network.
-- Messages they produced and broadcast themselves.
-- Messages they received as the `message` argument of `DecryptionProgressSubmitted` events emitted by the sequencer contract at `SEQUENCER_ADDRESS`.
-
-If a message `keys_message` is not valid according to `check_decryption_keys_message(keys_message, eon)` it is ignored:
+The keyper validates `DecryptionKeys` messages `keys_message` received on the p2p network according to `check_decryption_keys_message(keys_message, eon)`:
 
 ```python
 def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon_public_key: bytes, threshold: uint64) -> bool:
@@ -212,12 +241,12 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon
     ):
         return False
 
-    unique_signer_indices = set(keys_message.signerIndices)
-    if len(keys_message.signerIndices) != unique_signer_indices:
+    unique_signer_indices = set(keys_message.extra.signerIndices)
+    if len(keys_message.extra.signerIndices) != unique_signer_indices:
         return False
-    if len(keys_message.signatures) != len(keys_message.signerIndices):
+    if len(keys_message.extra.signatures) != len(keys_message.extra.signerIndices):
         return False
-    if len(keys_message.signatures) != threshold:
+    if len(keys_message.extra.signatures) != threshold:
         return False
 
     keypers: List[Address] = get_keyper_set()
@@ -226,17 +255,15 @@ def check_decryption_keys_message(keys_message: DecryptionKeys, eon: uint64, eon
         check_slot_decryption_identities_signature(
             instance_id=keys_message.instanceID,
             eon=keys_message.eon,
-            slot=keys_message.slot,
-            tx_pointer=keys_message.txPointer,
+            slot=keys_message.extra.slot,
+            tx_pointer=keys_message.extra.txPointer,
             identities=[key.identity for key in keys_message.keys],
             signature=signature,
             keyper_address=keypers[signer_index],
         )
-        for signer_index, signature in zip(keys_message.signerIndices, keys_message.signatures)
+        for signer_index, signature in zip(keys_message.extra.signerIndices, keys_message.extra.signatures)
     )
 ```
-
-Otherwise, the keyper updates its local `tx_pointer` to `max(tx_pointer, keys_message.txPointer)`.
 
 ### Validator
 
@@ -245,20 +272,19 @@ Validators keep track if they are registered in the Validator Registry, i.e., `v
 - `validator_index` is the index of the validator in the Beacon Chain,
 - `state` is the current Beacon Chain state, and
 
-Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `tbd` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
+Registered validators subscribe to `DecryptionKeys` messages from keypers on the topic `"decryptionKeys"` and validate them as described under [Decryption Keys Processing](#decryption-keys-processing).
 
-If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
+If a registered validator is selected as the block proposer for slot `slot`, they hold off on producing a block until they receive a valid `DecryptionKeys` message `keys_message` where `keys_message.extra.slot == slot`. If no such message is received up until the end of `slot`, the proposer proposes no block.
 
-Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that, for any `key` in `keys_message.keys`, fulfill
+Once `keys_message` is received, the validator fetches those `TransactionSubmitted` events `tx_submitted_event` from the sequencer contract that fulfill
 
-- `e.args.eon == keys_message.eon` and
-- `compute_identity(compute_identity_preimage(e.args.identityPrefix, keys_message.sender)) == key.identity`.
+- `e.args.eon == keys_message.eon`,
+- `e.args.index >= keys_message.extra.txPointer`, and
+- `e.args.index < keys_message.extra.txPointer + len(keys_message.keys) - 1`.
 
-The events are fetched in the order the events were emitted. For each `tx_submitted_event` with corresponding `key`, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
+The events are fetched in the order the events were emitted. For each `tx_submitted_event`, they get the corresponding `key` from `keys_message.keys`, identified by `key.identity = compute_identity(e.args.identityPrefix, e.args.sender)`. If no such key exists, they propose an empty block. Otherwise, the validator first computes `encrypted_transaction = decode_encrypted_message(e.args.encryptedTransaction)` and then `decrypted_transaction = decrypt(encrypted_transaction, key.key)`. If any of the functions fails, they skip `tx_submitted_event`. The decrypted transactions are appended to a list `decrypted_transactions` in the same order the events are fetched.
 
-With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block` with transactions `txs`. `txs[0]` makes the contract at `SEQUENCER_ADDRESS` to emit the event `DecryptionProgressSubmitted` exactly once with argument `message = keys_message`.
-
-Transactions `txs[j]` for `j >= 1` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
+With the set of decrypted transactions `decrypted_transactions`, the validator constructs a block `block`. The transactions `txs` in `block` are a subset of `decrypted_transactions`. The transactions are in the correct order, i.e., taking any two decrypted transactions `txs[i1]` and `txs[i2]` with `i2 > i1`, the corresponding indices in `decrypted_transactions` `j1` and `j2` fulfill `j2 > j1`. Furthermore, for any decrypted transaction that is missing in the block one or both of the following conditions holds:
 
 - Inserting it in accordance with the ordering property and removing all following transactions would make the block invalid.
 - Its gas limit is different from the gas limit specified by the corresponding `TransactionSubmitted` event `tx_submitted_event` in the argument `e.args.gasLimit`.
@@ -295,16 +321,19 @@ The Sequencer is a contract deployed at address `SEQUENCER_ADDRESS`. It implemen
 ```solidity
 interface ISequencer {
     function submitEncryptedTransaction(uint64 eon, bytes32 identityPrefix, bytes memory encryptedTransaction, uint256 gasLimit) external;
-    function submitDecryptionProgress(bytes memory message) external;
 
-    event TransactionSubmitted(uint64 eon, bytes32 identityPrefix, address sender, bytes encryptedTransaction, uint256 gasLimit);
-    event DecryptionProgressSubmitted(bytes message);
+    event TransactionSubmitted(
+        uint64 eon,
+        uint64 txIndex,
+        bytes32 identityPrefix,
+        address sender,
+        bytes encryptedTransaction,
+        uint256 gasLimit
+    );
 }
 ```
 
-`submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, msg.sender, identityPrefix, encryptedTransaction, gasLimit)`.
-
-`submitDecryptionProgress(message)` emits `DecryptionProgressSubmitted(message)`.
+`submitEncryptedTransaction(eon, identityPrefix, encryptedTransaction, gasLimit)` reverts if `msg.value < block.baseFee * gasLimit`. Otherwise, it emits the event `TransactionSubmitted(eon, txIndex, msg.sender, identityPrefix, encryptedTransaction, gasLimit)` where `txIndex` is the number of emitted `TransactionSubmitted` events emitted so far with eon `eon`.
 
 The constant `ENCRYPTED_GAS_LIMIT` defines how much gas is earmarked for encrypted transactions. The function `get_next_transactions` retrieves a set of transactions from the queue:
 
@@ -314,6 +343,7 @@ import dataclasses
 @dataclasses.dataclass
 class SequencedTransaction:
     eon: uint64
+    index: uint64
     encrypted_transaction: bytes
     gas_limit: int
     identity_preimage: bytes
@@ -333,6 +363,7 @@ def get_next_transactions(state: BeaconState, eon: int, tx_pointer: int) -> Sequ
             break
         tx = SequencedTransaction(
             eon=event.args.eon,
+            index=event.args.txIndex,
             encrypted_transaction=event.args.encryptedTransaction,
             gas_limit=event.args.gasLimit,
             identity_preimage=compute_identity_preimage(event.args.identityPrefix, event.args.sender),
@@ -483,7 +514,7 @@ interface IKeyBroadcastContract {
 
 1. The contract has already stored a key for the given eon.
 2. `key` is empty.
-3. `IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS).getKeyperSetAddress(eon)` reverts or returns an address different from `msg.sender`.
+3. `IKeyperSetManager(KEYPER_SET_MANAGER_ADDRESS).getKeyperSetAddress(eon).isAllowedToBroadcastEonKey(msg.sender)` reverts or returns `false`.
 
 Otherwise, it stores `key` in a way that it is indexable by `eon` and emits the event `EonKeyBroadcast(eon, key)`.
 
@@ -541,6 +572,7 @@ interface IKeyperSet {
     function getMember(uint64 index) external view returns (address);
     function getMembers() external view returns (address[] memory);
     function getThreshold() external view returns (uint64);
+    function isAllowedToBroadcastEonKey(address account) external view returns (bool);
 }
 ```
 
