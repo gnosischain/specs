@@ -14,6 +14,7 @@ Table below list differences if any.
 | [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): Execution layer triggerable exits         | EL     | Not modified, same addresses as Ethereum
 | [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): Increase the MAX_EFFECTIVE_BALANCE        | CL     | Not modified
 | [EIP-7549](https://eips.ethereum.org/EIPS/eip-7549): Move committee index outside Attestation  | CL     | Not modified
+| [EIP-4844-B](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
@@ -21,7 +22,15 @@ Note: The trusted setup required for [deneb's cryptography](https://github.com/e
 
 ## Differences with Ethereum mainnet
 
-_TBA_
+### [EIP-4844-B](https://eips.ethereum.org/EIPS/eip-4844)
+
+Extends the modified Gnosis EIP-4844 as defined in the [dencun spec](../dencun.md) document. Starting at the fork timestamp, the blob base fee is collected instead of burned.
+
+| Constant | Value |
+| - | - |
+| EIP4844_FEE_COLLECTOR | 0x6BBe78ee9e474842Dbd4AB4987b3CeFE88426A92 |
+
+The actual `blob_fee` as calculated via `calc_blob_fee` is deducted from the sender balance before transaction execution and credited to the pre-defined address `EIP4844_FEE_COLLECTOR` as part of block processing. It is not refunded in case of transaction failure.
 
 ## Upgrade Schedule
 
