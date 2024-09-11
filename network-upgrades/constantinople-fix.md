@@ -1,10 +1,8 @@
-# Constantinople-B Upgrade Specification
+# Constantinople-Fix Upgrade Specification
 
 ## Included EIPs
 
-This hard fork is unique to Gnosis Chain and sole
-This hard fork activates all EIPs also activated on Ethereum mainnet [hard-fork EIP](https://eips.ethereum.org/EIPS/eip-1013).
-Table below list differences if any.
+This hard fork is unique to Gnosis Chain and only de-activates an EIP activated in the prior [Constantinople](../constantinople.md) fork.
 
 | EIP |  |
 | - | - |
