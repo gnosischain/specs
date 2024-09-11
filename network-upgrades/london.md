@@ -6,10 +6,10 @@ This hard fork activates all EIPs also activated on Ethereum mainnet, [london sp
 
 | EIP |  |
 | - | - |
-| [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain                  | Modified
-| [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): BASEFEE opcode                                       | Not modified?
-| [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds                                 | Not modified?
-| [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contract code starting with the 0xEF byte | Not modified?
+| [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain                  | [**Modified**](#eip-1559)
+| [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): BASEFEE opcode                                       | Not modified
+| [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds                                 | Not modified
+| [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contract code starting with the 0xEF byte | Not modified
 
 ## Differences with Ethereum mainnet
 

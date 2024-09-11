@@ -7,7 +7,7 @@ Table below list differences if any.
 
 | EIP | Scope |  |
 | - | - | - |
-| [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake | CL, EL | Modified
+| [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake | CL, EL | [**Modified**](#eip-3675)
 | [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO | EL | Not modified
 
 ## Differences with Ethereum mainnet
