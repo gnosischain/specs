@@ -14,7 +14,7 @@ Table below list differences if any.
 | [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): Execution layer triggerable exits         | EL     | Not modified, same addresses as Ethereum
 | [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): Increase the MAX_EFFECTIVE_BALANCE        | CL     | Not modified
 | [EIP-7549](https://eips.ethereum.org/EIPS/eip-7549): Move committee index outside Attestation  | CL     | Not modified
-| [EIP-4844-B](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
+| [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
@@ -22,7 +22,7 @@ Note: The trusted setup required for [deneb's cryptography](https://github.com/e
 
 ## Differences with Ethereum mainnet
 
-### [EIP-4844-B](https://eips.ethereum.org/EIPS/eip-4844)
+### [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844)
 
 Extends the modified Gnosis EIP-4844 as defined in the [dencun spec](../dencun.md) document. Starting at the fork timestamp, the blob base fee is collected instead of burned.
 
