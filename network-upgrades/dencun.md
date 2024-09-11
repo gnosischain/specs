@@ -25,9 +25,11 @@ Note: The trusted setup required for [deneb's cryptography](https://github.com/e
 
 ### [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 
-Gnosis chain has slots significantly faster than Ethereum. Bigger blocks _could_ have a higher cost to the network than Ethereum so we may price blobs differently. Ethereum mainnet has chosen a target of 3 blobs from real live experiments on mainnet with big blocks. Consecuently this parameters may not be adecuate.
+Gnosis chain has slots significantly faster than Ethereum. Bigger blocks have a higher cost to the network than Ethereum so we reduce the blob count per block to a safer value. price blobs differently. Ethereum mainnet has chosen a target of 3 blobs from real live experiments on mainnet with big blocks. Consecuently this parameters may not be adecuate. We ran a big blocks experiment that informed the chosen parameters. See this [research doc](../research/dencun/eip-4844.md) for details on the experiment.
 
 Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a concern. Ethereum's `MIN_BLOB_GASPRICE` makes blob space free (1e-18 USD / blob) if usage is under the target for a sustained period of time. The same concern applies to Ethereum, but consensus is that choosing a specific value that may apply to only some market conditions and not others. Given that Gnosis native token is a stable coin, this concerns are mitigated. Given usage under target for regular txs and blob data, setting min blob gas price to 1 GWei reduces the cost per byte by a factor of 16.
+
+Note that the blob gas fee is burned as defined by [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) spec. Gnosis adaptation of EIP-1559 collects transaction base fees on a predefined address. This behaviour will apply on blob gas fees on the next fork [pectra](../pectra.md).
 
 | Constant | Value |
 | -------- | ----- |
@@ -36,7 +38,7 @@ Gnosis chain has significantly cheaper fees than mainnet, so blob spam is a conc
 | MAX_BLOB_GAS_PER_BLOCK | 262144 |
 | BLOB_GASPRICE_UPDATE_FRACTION | 1112826 |
 
-See [rationale](../research/dencun/eip-7514.md) for chosen blob gas parameters.
+See [rationale](../research/dencun/eip-4844.md) for chosen blob gas parameters.
 
 ### [EIP-7514](https://eips.ethereum.org/EIPS/eip-7514)
 

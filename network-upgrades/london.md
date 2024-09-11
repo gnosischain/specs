@@ -21,7 +21,7 @@ Gnosis chain native token is xDAI (wrapped DAI). Each xDAI token represents a cl
 | - | - |
 | EIP1559_FEE_COLLECTOR | 0x6BBe78ee9e474842Dbd4AB4987b3CeFE88426A92 |
 
-Block validity is modified by extending the reference implementation in the EIP. The burned fee is transfered to a pre-definied address as part of block processing.
+Block validity is modified by extending the reference implementation in the EIP. The burned fee is transfered to the pre-definied address `EIP1559_FEE_COLLECTOR` as part of block processing.
 
 ```diff
  class World(ABC):
