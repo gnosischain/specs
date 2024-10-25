@@ -413,23 +413,24 @@ The contract maintains a zero-indexed sequence of `Update`s. `getNumUpdates()` r
 Validators are expected to announce their intent to start or stop participating in the protocol by calling `update(message, signature)`. `message` is computed by `compute_registration_message` or `compute_deregistration_message`, respectively:
 
 ```python
-def compute_registration_message(validator_index: uint64, nonce: uint64):
-    return compute_registry_message_prefix(validator_index, nonce) + b"\x01"
+def compute_registration_message(start_index: uint64, count: uint32, nonce: uint32):
+    return compute_registry_message_prefix(start_index, count, nonce) + b"\x01"
 
-def compute_deregistration_message(validator_index: uint64, nonce: uint64):
-    return compute_registry_message_prefix(validator_index, nonce) + b"\x00"
+def compute_deregistration_message(start_index: uint64, count: uint32, nonce: uint32):
+    return compute_registry_message_prefix(start_index, count, nonce) + b"\x00"
 
-def compute_registry_message_prefix(validator_index: uint64, nonce: uint64):
-    return VALIDATOR_REGISTRY_MESSAGE_VERSION + CHAIN_ID.to_bytes(8, "big") + VALIDATOR_REGISTRY_ADDRESS + validator_index.to_bytes(8, "big") + nonce.to_bytes(8, "big")
+def compute_registry_message_prefix(start_index: uint64, count: uint32, nonce: uint32):
+    return VALIDATOR_REGISTRY_MESSAGE_VERSION + CHAIN_ID.to_bytes(8, "big") + VALIDATOR_REGISTRY_ADDRESS + start_index.to_bytes(8, "big") + count.to_bytes(4, "big") + nonce.to_bytes(4, "big")
 ```
 
 The parameters are as follows:
 
-- `validator_index` is the Beacon Chain index of the registering or deregistering validator.
-- `nonce` is a `uint64` greater than the nonce used in any previously published registration or deregistration message by the registering validator.
-- `VALIDATOR_REGISTRY_MESSAGE_VERSION = b"\x00"`
+- `start_index` is the Beacon Chain index of the first registering or deregistering validator.
+- `count` is the number of validators being registered or deregistered starting from the first Beacon Chain index onwards.
+- `nonce` is a `uint32` greater than the nonce used in any previously published registration or deregistration message by the registering validator. Nonces are tracked individually for each validator index.
+- `VALIDATOR_REGISTRY_MESSAGE_VERSION = b"\x01"`
 
-`signature = bls.Sign(validator_privkey, keccak256(message))` where `validator_privkey` is the private key of the validator.
+`signature = bls.SignAggregate(validator_privkeys, keccak256(message))` where `validator_privkeys` are the private keys of the validator. Signatures use the DST `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_` and are given as compressed G2 points (96 bytes).
 
 The list of indices of all participating validators is `get_participating_validators(state)` given the beacon chain `state`:
 
@@ -447,13 +448,16 @@ def get_participating_validators(state) -> Sequence[ValidatorIndex]:
                 version,
                 chain_id,
                 validator_registry_address,
-                validator_index,
+                start_index,
+                count,
                 nonce,
                 is_registration,
             ) = extract_message_parts(update.message)
         except:
             continue
 
+        if count == 0:
+            continue
         if version != VALIDATOR_REGISTRY_MESSAGE_VERSION:
             continue
         if chain_id != CHAIN_ID:
@@ -461,40 +465,46 @@ def get_participating_validators(state) -> Sequence[ValidatorIndex]:
         if validator_registry_address != VALIDATOR_REGISTRY_ADDRESS:
             continue
 
-        if validator_index >= len(state.validators):
-            continue
-        if nonce <= prev_nonces.get(validator_index, -1):
+        end_index = start_index + count
+
+        if end_index > len(state.validators):
             continue
 
-        validator_pubkey = state.validators[validator_index].pubkey
-        if not bls.Verify(validator_pubkey, keccak256(message), signature):
+        validator_pubkeys = [v.pubkey for v in state.validators[start_index : end_index]]
+        if not bls.VerifyAggregate(validator_pubkeys, keccak256(message), signature):
             continue
 
-        prev_nonces[validator_index] = nonce
-        if is_registration:
-            indices.add(validator_index)
-        else:
-            indices.remove(validator_index)
+        for validator_index in range(start_index, end_index):
+            if nonce <= prev_nonces.get(validator_index, -1):
+                continue
+
+            prev_nonces[validator_index] = nonce
+            if is_registration:
+                indices.add(validator_index)
+            else:
+                indices.remove(validator_index)
 
     return sorted(indices)
 
-def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint64, uint64, bool]:
+def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint64, uint32, uint32, bool]:
     suffix = message[-1:]
     is_registration = bool(int.from_bytes(suffix, "big"))
 
     prefix = message[:-1]
-    assert len(prefix) == 1 + 8 + 20 + 8 + 8
+    assert len(prefix) == 1 + 8 + 20 + 8 + 4 + 4
     version = prefix[0:1]
     chain_id_bytes = prefix[1:9]
     registry_address = prefix[9:29]
     index_bytes = prefix[29:37]
-    nonce_bytes = prefix[37:45]
+    count_bytes = prefix[37:41]
+    nonce_bytes = prefix[41:45]
 
     chain_id = int.from_bytes(chain_id_bytes, "big")
     index = int.from_bytes(index_bytes, "big")
+    count = int.from_bytes(count_bytes, "big")
     nonce = int.from_bytes(nonce_bytes, "big")
 
-    return version, chain_id, registry_address, index, nonce, is_registration
+    return version, chain_id, registry_address, index, count, nonce, is_registration
 ```
 
 ### Key Broadcast Contract
