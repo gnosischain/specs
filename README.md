@@ -20,7 +20,7 @@ This repository hosts the current specifications for Gnosis chain and Gnosis bea
 | London | 19040000 (Nov 12 2021) | [london.md](./network-upgrades/london.md) |
 | Berlin | 16101500 (May 17 2021) | [berlin.md](./network-upgrades/berlin.md) |
 | Istanbul | 7298030 (Dec 12 2019) | [istanbul.md](./network-upgrades/istanbul.md) |
-| ?? | 2508800 (Mar 06 2019) | EIP-1283 Disable |
+| Constantinople-fix | 2508800 (Mar 06 2019) | [constantinople-b.md](./network-upgrades/constantinople-fix.md) |
 | Constantinople | 1604400 (Jan 11 2019) | [constantinople.md](./network-upgrades/constantinople.md) |
 | Genesis | 0 | _TODO_ |
 

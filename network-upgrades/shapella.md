@@ -7,11 +7,11 @@ Table below list differences if any.
 
 | EIP | Scope |  |
 | - | - | - |
-| [EIP-170](https://eips.ethereum.org/EIPS/eip-170): Contract code size limit | EL | Activated in Gnosis at a latter fork than Ethereum
+| [EIP-170](https://eips.ethereum.org/EIPS/eip-170): Contract code size limit | EL | [**Different scheduling**](#eip-170) (at a latter fork than Ethereum)
 | [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651): Warm COINBASE | EL | Not modified
 | [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): PUSH0 instruction | EL | Not modified
 | [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860): Limit and meter initcode | EL | Not modified
-| [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations | CL, EL | Modified
+| [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations | CL, EL | [**Modified**](#eip-4895)
 | [EIP-6049](https://eips.ethereum.org/EIPS/eip-6049): Deprecate SELFDESTRUCT | EL | Not modified
 
 ## Differences with Ethereum mainnet

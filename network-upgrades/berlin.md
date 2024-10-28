@@ -7,10 +7,10 @@ Table below list differences if any.
 
 | EIP |  |
 | - | - |
-| [EIP-2565](https://eips.ethereum.org/EIPs/eip-2565): ModExp Gas Cost | Not modified?
-| [EIP-2718](https://eips.ethereum.org/EIPs/eip-2718): Typed Transaction Envelope  | (**TODO included?**)
-| [EIP-2929](https://eips.ethereum.org/EIPs/eip-2929): Gas cost increases for state access opcodes | Not modified?
-| [EIP-2930](https://eips.ethereum.org/EIPs/eip-2930): Optional access lists | Not modified?
+| [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp Gas Cost | Not modified
+| [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718): Typed Transaction Envelope  | Not modified
+| [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): Gas cost increases for state access opcodes | Not modified
+| [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional access lists | Not modified
 
 ## Upgrade Schedule
 

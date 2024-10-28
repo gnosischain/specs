@@ -7,11 +7,16 @@ Table below list differences if any.
 
 | EIP |  |
 | - | - |
-| [EIP-145](https://eips.ethereum.org/EIPs/eip-145:) Bitwise shifting instructions in EVM | Not modified? |
-| [EIP-1014](https://eips.ethereum.org/EIPs/eip-1014): Skinny CREATE2 | Not modified? |
-| [EIP-1052](https://eips.ethereum.org/EIPs/eip-1052): EXTCODEHASH opcode | Not modified? |
-| [EIP-1283](https://eips.ethereum.org/EIPs/eip-1283): Net gas metering for SSTORE without dirty maps (* what happened with this EIP?) | Not modified? |
+| [EIP-145](https://eips.ethereum.org/EIPS/eip-145:) Bitwise shifting instructions in EVM | Not modified |
+| [EIP-1014](https://eips.ethereum.org/EIPS/eip-1014): Skinny CREATE2 | Not modified |
+| [EIP-1052](https://eips.ethereum.org/EIPS/eip-1052): EXTCODEHASH opcode | Not modified |
+| [EIP-1283](https://eips.ethereum.org/EIPS/eip-1283): Net gas metering for SSTORE without dirty maps | Different scheduling |
 
+## Differences with Ethereum mainnet
+
+### [EIP-1283](https://eips.ethereum.org/EIPS/eip-1283)
+
+[EIP-1283](https://eips.ethereum.org/EIPS/eip-1283) activated in Gnosis Chain but it never activated in Ethereum. Latter stages of testing in Ethereum revealed issues that lead to the deprecation of the EIP. Gnosis Chain de-activated the EIP in a latter fork [Constantinople-B](../constantinople-b.md).
 
 ## Upgrade Schedule
 
