@@ -7,7 +7,7 @@ Refer to [./consensus/config/gnosis.yaml](./consensus/config/gnosis.yaml) for th
 Note that modified preset values will result in different SSZ data structures, such that a client compiled with the Ethereum mainnet preset can't deserialize a state from the Gnosis Beacon Chain.
 
 ```
-ETHEREUM_SPEC_COMMIT: v1.5.0-alpha.3
+ETHEREUM_SPEC_COMMIT: v1.5.0-alpha.8
 ```
 
 ### Preset diff
