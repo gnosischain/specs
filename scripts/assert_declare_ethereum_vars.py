@@ -58,6 +58,7 @@ IGNORE_FROM_REMOTE_CONFIG_KEYS = [
     'EIP6110_FORK_',
     'EIP7002_FORK_',
     'EIP7594_FORK_',
+    'EIP7732_FORK_',
     'WHISK_FORK_'
 ]
 
@@ -163,9 +164,9 @@ for local_file_path, remote_url_path in FILES:
 
     print(local_file_path, commit, remote_url_path)
     if new_keys:
-        raise Exception(f"New keys found in GitHub YAML not used in local YAML: {new_keys}")
+        raise Exception(f"New keys found in GitHub YAML {remote_url_path} not used in local YAML: {new_keys}")
     elif missing_keys:
-        raise Exception(f"Keys in local YAML not found in GitHub YAML: {missing_keys}")
+        raise Exception(f"Keys in local YAML {local_file_path} not found in GitHub YAML: {missing_keys}")
     else:
         print("No differences in keys found.")
 
