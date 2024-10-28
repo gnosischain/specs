@@ -30,4 +30,5 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-alpha.8
 | `ETH1_FOLLOW_DISTANCE`                  | `2048`        | `1024`       |
 | `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          | See https://github.com/gnosischain/specs/pull/22 for rationale |
 | `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` | `4096`        | `16384`      | Increased to match the expected 2 weeks rollups consider today for Ethereum mainnet. The total disk requirement roughly equivalent to Ethereum mainnet since epochs are 4.8x faster |
+| `MAX_BLOBS_PER_BLOCK`                   | `6`           | `2`          | See [/network-upgrades/dencun.md#eip-4844](/network-upgrades/dencun.md#eip-4844) for rationale on choosing 1/2 for the Dencun hard fork |
 
