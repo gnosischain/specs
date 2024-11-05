@@ -507,6 +507,13 @@ def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint6
     return version, chain_id, registry_address, index, count, nonce, is_registration
 ```
 
+#### Backwards Compatibility
+
+V0 registrations are also supported, they have the following differences from V1:
+- `VALIDATOR_REGISTRY_MESSAGE_VERSION = b"\x00"`
+- Only supports registration of a single validator key, does not use aggregate signatures.
+- `count` bytes are ignored.
+
 ### Key Broadcast Contract
 
 The Key Broadcast Contract is deployed at address `KEY_BROADCAST_CONTRACT_ADDRESS`. It implements the following interface:
