@@ -510,6 +510,7 @@ def extract_message_parts(message: bytes) -> tuple[bytes, uint64, Address, uint6
 #### Backwards Compatibility
 
 V0 registrations are also supported, they have the following differences from V1:
+
 - `VALIDATOR_REGISTRY_MESSAGE_VERSION = b"\x00"`
 - Only supports registration of a single validator key, does not use aggregate signatures.
 - `count` bytes are ignored.
