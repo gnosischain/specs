@@ -59,6 +59,7 @@ System transactions rules are:
 - Fees are not added ([ref](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L421-L448))
 - `block.gas_used` is not incremented ([ref](https://github.com/NethermindEth/nethermind/blob/master/src/Nethermind/Nethermind.Evm/TransactionProcessing/TransactionProcessor.cs#L482-L485))
 - If the transaction reverts, or runs out of the gas, the entire block **MUST** be considered invalid.
+- If no contract is deployed at `WITHDRAWAL_CONTRACT`, ignore this system call and allow the block to be considered valid.
 
 ## Rationale
 
