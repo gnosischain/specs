@@ -9,11 +9,12 @@ Table below list differences if any.
 | - | - | - |
 | [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): Precompile for BLS12-381 curve operations | EL     | Not modified
 | [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935): Save historical block hashes in state     | EL     | Not modified
-| [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074): AUTH and AUTHCALL opcodes                 | EL     | Not modified
 | [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): Supply validator deposits on chain        | EL     | Not modified
 | [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): Execution layer triggerable exits         | EL     | Not modified, same addresses as Ethereum
 | [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): Increase the MAX_EFFECTIVE_BALANCE        | CL     | Not modified
 | [EIP-7549](https://eips.ethereum.org/EIPS/eip-7549): Move committee index outside Attestation  | CL     | Not modified
+| [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685): General purpose execution layer requests  | Both   | Not modified
+| [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702): Set EOA account code                      | EL     | Not modified
 | [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
