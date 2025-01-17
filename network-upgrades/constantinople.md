@@ -20,7 +20,7 @@ Table below list differences if any.
 
 ## Upgrade Schedule
 
-| Network | Block   | Date & Time (UTC)             |   Fork Hash   | 
-| ------- | ------- | ----------------------------- |   ---------   | 
-| Mainnet | 1604400 | Jan-11-2019 11:24:50 AM +UTC  |  0xfde2d083   | 
+| Network | Block   | Date & Time (UTC)             | Fork Hash | 
+| ------- | ------- | ----------------------------- | --------- | 
+| Mainnet | 1604400 | Jan-11-2019 11:24:50 AM +UTC  | 0xfde2d083 | 
 
