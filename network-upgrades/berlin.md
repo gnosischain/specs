@@ -14,7 +14,6 @@ Table below list differences if any.
 
 ## Upgrade Schedule
 
-| Network | Block    | Date & Time (UTC)             | 
-| ------- | -------- | ----------------------------- | 
-| Mainnet | 16101500 | May-17-2021 01:33:45 PM +UTC  | 
-
+| Network | Block    | Date & Time (UTC)             |   Fork Hash   |
+| ------- | -------- | ----------------------------- |   ---------   |
+| Mainnet | 16101500 | May-17-2021 01:33:45 PM +UTC  |  0x069a83d9   |
