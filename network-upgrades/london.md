@@ -34,7 +34,7 @@ Block validity is modified by extending the reference implementation in the EIP.
 
 ## Upgrade Schedule
 
-| Network | Block    | Date & Time (UTC)             | 
-| ------- | -------- | ----------------------------- | 
-| Mainnet | 19040000 | Nov-12-2021 09:46:20 PM +UTC  | 
+| Network | Block    | Date & Time (UTC)             | Fork Hash | 
+| ------- | -------- | ----------------------------- | --------- | 
+| Mainnet | 19040000 | Nov-12-2021 09:46:20 PM +UTC  | 0x018479d3 | 
 

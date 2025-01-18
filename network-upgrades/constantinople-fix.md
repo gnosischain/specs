@@ -16,8 +16,8 @@ This hard fork is unique to Gnosis Chain and only de-activates an EIP activated 
 
 ## Upgrade Schedule
 
-| Network | Block   | Date & Time (UTC)             | 
-| ------- | ------- | ----------------------------- | 
-| Mainnet | 2508800 | Mar-06-2019 01:35:45 PM +UTC  | 
+| Network | Block   | Date & Time (UTC)             | Fork Hash | 
+| ------- | ------- | ----------------------------- | --------- | 
+| Mainnet | 2508800 | Mar-06-2019 01:35:45 PM +UTC  | 0xfc1d8f2f | 
 
 
