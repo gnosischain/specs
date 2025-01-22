@@ -14,7 +14,9 @@ Table below list differences if any.
 | [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): Increase the MAX_EFFECTIVE_BALANCE        | CL     | Not modified
 | [EIP-7549](https://eips.ethereum.org/EIPS/eip-7549): Move committee index outside Attestation  | CL     | Not modified
 | [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685): General purpose execution layer requests  | Both   | Not modified
+| [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691): Blob throughput increase                  | Both   | Constants modified
 | [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702): Set EOA account code                      | EL     | Not modified
+| [EIP-7840](https://eips.ethereum.org/EIPS/eip-7840): Add blob schedule to EL config files      | EL     | Not modified
 | [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
@@ -22,6 +24,18 @@ Table below list differences if any.
 Note: The trusted setup required for [deneb's cryptography](https://github.com/ethereum/consensus-specs/blob/dev/specs/deneb/polynomial-commitments.md#trusted-setup) is the same as defined in Ethereum's consensus spec release v1.4.0, which can be found in [consensus/preset/gnosis/trusted_setups](./consensus/preset/gnosis/trusted_setups/trusted_setup_4096.json).
 
 ## Differences with Ethereum mainnet
+
+### [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691)
+
+The blob gas target and max is kept equal to the Dencun hard-fork.
+
+| Constant                             | Value |
+| ------------------------------------ | ----- |
+| MAX_BLOBS_PER_BLOCK_ELECTRA          | 2
+| TARGET_BLOBS_PER_BLOCK_ELECTRA       | 1
+| MAX_BLOB_GAS_PER_BLOCK               | 262144
+| TARGET_BLOB_GAS_PER_BLOCK            | 131072
+| BLOB_BASE_FEE_UPDATE_FRACTION_PRAGUE | 5007716
 
 ### [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844)
 
