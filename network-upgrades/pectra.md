@@ -17,7 +17,7 @@ Table below list differences if any.
 | [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691): Blob throughput increase                  | Both   | Constants modified
 | [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702): Set EOA account code                      | EL     | Not modified
 | [EIP-7840](https://eips.ethereum.org/EIPS/eip-7840): Add blob schedule to EL config files      | EL     | Not modified
-| [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee                    | CL     | Added
+| [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844): Collect Blob Gas Fee               | EL     | Added
 
 \* See [Differences with Ethereum mainnet](#differences-with-ethereum-mainnet)
 
