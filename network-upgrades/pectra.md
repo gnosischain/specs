@@ -27,7 +27,7 @@ Note: The trusted setup required for [deneb's cryptography](https://github.com/e
 
 ### [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691)
 
-The blob gas target and max is kept equal to the Dencun hard-fork.
+The blob gas schedule is kept equal to the Dencun hard-fork.
 
 | Constant                             | Value |
 | ------------------------------------ | ----- |
@@ -35,7 +35,7 @@ The blob gas target and max is kept equal to the Dencun hard-fork.
 | TARGET_BLOBS_PER_BLOCK_ELECTRA       | 1
 | MAX_BLOB_GAS_PER_BLOCK               | 262144
 | TARGET_BLOB_GAS_PER_BLOCK            | 131072
-| BLOB_BASE_FEE_UPDATE_FRACTION_PRAGUE | 5007716
+| BLOB_BASE_FEE_UPDATE_FRACTION_PRAGUE | 1112826
 
 ### [EIP-4844-pectra](https://eips.ethereum.org/EIPS/eip-4844)
 
