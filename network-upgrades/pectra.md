@@ -49,10 +49,10 @@ The actual `blob_fee` as calculated via `calc_blob_fee` is deducted from the sen
 
 ## Upgrade Schedule
 
-| Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
-| ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  | 1741254220   | Mar-06-2025 09:43:40 AM +UTC  | 0x8ba51786| 948224             |
-| Mainnet | 1743523260   | Apr-01-2025 04:01:00 PM +UTC  | 0x5db43764| 1306624            |
+| Network | Timestamp    | Date & Time (UTC)             | Fork Hash  | Beacon Chain Epoch |
+| ------- | ------------ | ----------------------------- | ---------- | ------------------ |
+| Chiado  | 1741254220   | Mar-06-2025 09:43:40 AM +UTC  | 0x8ba51786 | 948224             |
+| Mainnet |              |                               |            |                    |
 
 ### Readiness Checklist
 
@@ -63,7 +63,7 @@ The actual `blob_fee` as calculated via `calc_blob_fee` is deducted from the sen
   - [x] Integration Tests
 - [x] Select Fork Triggers
   - [x] Chiado
-  - [x] Mainnet
+  - [ ] Mainnet
 - [ ] Deploy Clients
 - [ ] Activate Fork
 
