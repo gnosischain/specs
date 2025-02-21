@@ -51,19 +51,19 @@ The actual `blob_fee` as calculated via `calc_blob_fee` is deducted from the sen
 
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | --------- | ------------------ |
-| Chiado  |              |                               |           |                    |
-| Mainnet |              |                               |           |                    |
+| Chiado  | 1741254220   | Mar-06-2025 09:43:40 AM +UTC  | 0x8ba51786| 948224             |
+| Mainnet | 1743523260   | Apr-01-2025 04:01:00 PM +UTC  | 0x5db43764| 1306624            |
 
 ### Readiness Checklist
 
 **List of outstanding items before deployment.**
 
-- [ ] Client Integration Testing
-  - [ ] Deploy a Client Integration Testnet
-  - [ ] Integration Tests
-- [ ] Select Fork Triggers
-  - [ ] Chiado
-  - [ ] Mainnet
+- [x] Client Integration Testing
+  - [x] Deploy a Client Integration Testnet
+  - [x] Integration Tests
+- [x] Select Fork Triggers
+  - [x] Chiado
+  - [x] Mainnet
 - [ ] Deploy Clients
 - [ ] Activate Fork
 
