@@ -33,6 +33,7 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-alpha.10
 | `MAX_BLOBS_PER_BLOCK`                   | `6`           | `2`          | See [/network-upgrades/dencun.md#eip-4844](/network-upgrades/dencun.md#eip-4844) for rationale on choosing 1/2 for the Dencun hard fork |
 | `MAX_PER_EPOCH_ACTIVATION_EXIT_CHURN_LIMIT` | `256000000000` | `64000000000` | Match the modified value `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT` https://github.com/gnosischain/specs/pull/22 for rationale |
 | `MAX_BLOBS_PER_BLOCK_ELECTRA`           | `9`           | `2`          | Temporary value equal to `MAX_BLOBS_PER_BLOCK` |
+| `BLOB_SIDECAR_SUBNET_COUNT_ELECTRA`     | `9`           | `2`          | Match `MAX_BLOBS_PER_BLOCK_ELECTRA`
 | `MAX_REQUEST_BLOB_SIDECARS_ELECTRA`     | `1152`        | `256`        | Make the constant match `MAX_BLOBS_PER_BLOCK_ELECTRA * MAX_BLOCKS_PER_REQUEST` |
 | `MAX_BLOBS_PER_BLOCK_FULU`              | `12`          | `2`          | Temporary value equal to `MAX_BLOBS_PER_BLOCK` |
 
