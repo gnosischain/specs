@@ -36,5 +36,5 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-beta.2
 | `BLOB_SIDECAR_SUBNET_COUNT_ELECTRA`     | `9`           | `2`          | Equal to `MAX_BLOBS_PER_BLOCK_ELECTRA` |
 | `MAX_REQUEST_BLOB_SIDECARS_ELECTRA`     | `1152`        | `256`        | Make the constant match `MAX_BLOBS_PER_BLOCK_ELECTRA * MAX_BLOCKS_PER_REQUEST` |
 | `MAX_BLOBS_PER_BLOCK_FULU`              | `12`          | `2`          | Temporary value equal to `MAX_BLOBS_PER_BLOCK` |
-| `MIN_EPOCHS_FOR_DATA_COLUMN_SIDECARS_REQUESTS` | `4096` | `16384`      | Increased to match the expected 2 weeks rollups consider today for Ethereum mainnet |
+| `MIN_EPOCHS_FOR_DATA_COLUMN_SIDECARS_REQUESTS` | `4096` | `16384`      | Equal to `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` |
 
