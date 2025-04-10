@@ -13,7 +13,7 @@ This repository hosts the current specifications for Gnosis chain and Gnosis bea
 
 | Code name | Activation | Specs |
 | - | - | - |
-| Pectra | _TBD_ | [pectra.md](./network-upgrades/pectra.md) |
+| Pectra | Apr 30 2025 | [pectra.md](./network-upgrades/pectra.md) |
 | Dencun | Mar 11 2024 | [dencun.md](./network-upgrades/dencun.md) |
 | Shapella | Aug 01 2023 | [shapella.md](./network-upgrades/shapella.md) |
 | Merge / Paris | Dec 8 2022 | [merge.md](./network-upgrades/merge.md) |
