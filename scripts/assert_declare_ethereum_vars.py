@@ -134,10 +134,10 @@ def parse_md_table_to_json(md_content):
     return json_data
 
 def extract_config_diff_section(md_content):
-    return re.search(r'### Config diff\n(.*?)(?=\n###|$)', md_content, re.DOTALL).group(1).strip()
+    return re.search(r'#{2,} Config diff\n(.*?)(?=\n#{2,}|$)', md_content, re.DOTALL).group(1).strip()
 
 def extract_preset_diff_section(md_content):
-    return re.search(r'### Preset diff\n(.*?)(?=\n###|$)', md_content, re.DOTALL).group(1).strip()
+    return re.search(r'#{2,} Preset diff\n(.*?)(?=\n#{2,}|$)', md_content, re.DOTALL).group(1).strip()
 
 
 parser = argparse.ArgumentParser(description='Compare YAML keys.')
