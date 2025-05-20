@@ -10,7 +10,11 @@ Note that modified preset values will result in different SSZ data structures, s
 ETHEREUM_SPEC_COMMIT: v1.5.0-beta.4
 ```
 
-### Preset diff
+## Deposit contract diff
+
+Gnosis Beacon Chain deposit contract uses an ERC20 token to stake, specifically GNO [`0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb`](https://gnosisscan.io/token/0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb). The minimum deposit required is 1 GNO. To match the Beacon Chain's minimum deposit of 32e9 GWei, the deposit contract multiplies by a [factor of 32](https://github.com/gnosischain/deposit-contract/blob/fa9f3a495ad745e59ec144bd0797fbb358f2b2db/contracts/SBCDepositContract.sol#L164-L165) all deposit amounts. Therefore, a deposit of 1 GNO will be credited as 32 GNO in the Gnosis Beacon Chain. Then, the withdrawn values are divided by a [factor of 32](https://github.com/gnosischain/deposit-contract/blob/fa9f3a495ad745e59ec144bd0797fbb358f2b2db/contracts/SBCDepositContract.sol#L313-L314).
+
+## Preset diff
 
 | Name                                   | Ethereum spec | Gnosis spec |
 | -------------------------------------- | ------- | ------ |
@@ -20,7 +24,7 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-beta.4
 | `MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP` | `16384` | `8192` |
 | `MAX_WITHDRAWALS_PER_PAYLOAD`          | `16`    | `8`    |
 
-### Config diff
+## Config diff
 
 | Name                                    | Ethereum spec | Gnosis spec  |   |
 | --------------------------------------- | ------------- | ------------ | - |
