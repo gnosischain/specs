@@ -7,7 +7,7 @@ Refer to [./consensus/config/gnosis.yaml](./consensus/config/gnosis.yaml) for th
 Note that modified preset values will result in different SSZ data structures, such that a client compiled with the Ethereum mainnet preset can't deserialize a state from the Gnosis Beacon Chain.
 
 ```
-ETHEREUM_SPEC_COMMIT: v1.5.0-beta.4
+ETHEREUM_SPEC_COMMIT: v1.6.0-beta.0
 ```
 
 ### Preset diff
@@ -26,6 +26,7 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-beta.4
 | --------------------------------------- | ------------- | ------------ | - |
 | `CHURN_LIMIT_QUOTIENT`                  | `65536`       | `4096`       |
 | `SECONDS_PER_SLOT`                      | `12`          | `5`          |
+| `SLOT_DURATION_MS`                      | `12000`       | `5000`       | Same as `SECONDS_PER_SLOT`
 | `SECONDS_PER_ETH1_BLOCK`                | `14`          | `6`          |
 | `ETH1_FOLLOW_DISTANCE`                  | `2048`        | `1024`       |
 | `MAX_PER_EPOCH_ACTIVATION_CHURN_LIMIT`  | `8`           | `2`          | See https://github.com/gnosischain/specs/pull/22 for rationale |
@@ -35,6 +36,5 @@ ETHEREUM_SPEC_COMMIT: v1.5.0-beta.4
 | `MAX_BLOBS_PER_BLOCK_ELECTRA`           | `9`           | `2`          | No blob capacity scheduled, see [/network-upgrades/dencun.md#eip-4844](/network-upgrades/dencun.md#eip-4844) for rationale on choosing 1/2 | 
 | `BLOB_SIDECAR_SUBNET_COUNT_ELECTRA`     | `9`           | `2`          | Equal to `MAX_BLOBS_PER_BLOCK_ELECTRA` |
 | `MAX_REQUEST_BLOB_SIDECARS_ELECTRA`     | `1152`        | `256`        | Make the constant match `MAX_BLOBS_PER_BLOCK_ELECTRA * MAX_BLOCKS_PER_REQUEST` |
-| `MAX_BLOBS_PER_BLOCK_FULU`              | `12`          | `2`          | Temporary value equal to `MAX_BLOBS_PER_BLOCK` |
 | `MIN_EPOCHS_FOR_DATA_COLUMN_SIDECARS_REQUESTS` | `4096` | `16384`      | Equal to `MIN_EPOCHS_FOR_BLOB_SIDECARS_REQUESTS` |
 
