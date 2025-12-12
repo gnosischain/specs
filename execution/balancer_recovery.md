@@ -52,7 +52,7 @@ def process_block(parent_header, block, state):
 
 ### Solidity contract
 
-`BALANCER_RESCUE_BYTECODE` is generated compiling the following Solidity source file with `solc` flags _TBA_.
+`BALANCER_RESCUE_BYTECODE` is generated compiling the following Solidity source file with `solc` flags _TBA_. A test version of the contract is deployed at [`0x87b95414E23f122c00C896d6Ce671B44Cf471C96`](https://gnosisscan.io/address/0x87b95414E23f122c00C896d6Ce671B44Cf471C96#code) with verified source and matching deployed bytecode to `BALANCER_RESCUE_BYTECODE`.
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
