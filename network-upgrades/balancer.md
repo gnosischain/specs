@@ -2,7 +2,7 @@
 
 ## Included changes
 
-This hard fork introduces an irregular state change to recover the stolen funds of the Balancer V2 hack on November 2025.
+This hard fork specification introduces an irregular state change intended to recover funds stolen in the Balancer V2 hack in November 2025. Whether and when this specification is activated on Gnosis Chain depends on validator adoption and client configuration.
 
 | EIP | Scope |  |
 | - | - | - |
