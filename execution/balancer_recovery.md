@@ -45,9 +45,7 @@ def process_block(parent_header, block, state):
         parent_header.timestamp < BALANCER_HARDFORK_TIMESTAMP
         and block.header.timestamp >= BALANCER_HARDFORK_TIMESTAMP
     ):
-        attacker_acct = state.account(BALANCER_ATTACKER_ADDRESS)
-        if attacker_acct.bytecode != BALANCER_RESCUE_BYTECODE:
-            attacker_acct.bytecode = BALANCER_RESCUE_BYTECODE
+        state.account(BALANCER_ATTACKER_ADDRESS).bytecode = BALANCER_RESCUE_BYTECODE
 
     # ... continue with regular block processing, including EIP-4788 and EIP-2935.
 ```
