@@ -52,7 +52,9 @@ def process_block(parent_header, block, state):
     # ... continue with regular block processing, including EIP-4788 and EIP-2935.
 ```
 
-### Bytecode
+### Solidity contract
+
+`BALANCER_RESCUE_BYTECODE` is generated compiling the following Solidity source file with `solc` flags _TBA_.
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
