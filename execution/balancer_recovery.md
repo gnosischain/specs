@@ -52,7 +52,7 @@ def process_block(parent_header, block, state):
 
 ### Solidity contract
 
-`BALANCER_RESCUE_BYTECODE` is generated compiling the following Solidity source file with `solc` flags _TBA_. A test version of the contract is deployed at [`0x87b95414E23f122c00C896d6Ce671B44Cf471C96`](https://gnosisscan.io/address/0x87b95414E23f122c00C896d6Ce671B44Cf471C96#code) with verified source and matching deployed bytecode to `BALANCER_RESCUE_BYTECODE`.
+`BALANCER_RESCUE_BYTECODE` is generated compiling the following Solidity source file with `solidity` version v0.8.30+commit.73712a01 and no optimizations with 200 runs.
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
@@ -100,6 +100,8 @@ contract HardcodedForwarder {
     receive() external payable {}
 }
 ```
+
+A test version of the contract is deployed at [`0x87b95414E23f122c00C896d6Ce671B44Cf471C96`](https://gnosisscan.io/address/0x87b95414E23f122c00C896d6Ce671B44Cf471C96#code) with verified source and matching deployed bytecode to `BALANCER_RESCUE_BYTECODE`. The source is reproducible compiling `HardcodedForwarder` on this commit https://github.com/filoozom/balancer-recovery/commit/43c1c3ea9cc3b8af7e766f4ea1cbe7b4dbf54e79 using `forge build` with compiler settings specified above.
 
 ## Rationale
 
