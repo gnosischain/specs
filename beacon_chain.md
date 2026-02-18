@@ -12,13 +12,14 @@ ETHEREUM_SPEC_COMMIT: v1.6.0-beta.0
 
 ### Preset diff
 
-| Name                                   | Ethereum spec | Gnosis spec |
-| -------------------------------------- | ------- | ------ |
-| `BASE_REWARD_FACTOR`                   | `64`    | `25`   |
-| `SLOTS_PER_EPOCH`                      | `32`    | `16`   |
-| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD`     | `256`   | `512`  |
-| `MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP` | `16384` | `8192` |
-| `MAX_WITHDRAWALS_PER_PAYLOAD`          | `16`    | `8`    |
+| Name                                         | Ethereum | Gnosis | Rationale |
+| -------------------------------------------- | -------- | ------ | --------- |
+| `BASE_REWARD_FACTOR`                         | `64`     | `25`   | Adjusted for 5s slot time |
+| `SLOTS_PER_EPOCH`                            | `32`     | `16`   | 5s slots, ~80s epochs |
+| `EPOCHS_PER_SYNC_COMMITTEE_PERIOD`           | `256`    | `512`  | Match ~27h sync period |
+| `MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP`       | `16384`  | `8192` | Scaled for shorter epochs |
+| `MAX_WITHDRAWALS_PER_PAYLOAD`                | `16`     | `8`    | Scaled for shorter epochs |
+| `MAX_PENDING_PARTIALS_PER_WITHDRAWALS_SWEEP` | `8`      | `6`    | Must be < `MAX_WITHDRAWALS_PER_PAYLOAD` ([post-mortem](docs/postmortems/2025-10-15-pectra-withdrawals.md)) |
 
 ### Config diff
 
