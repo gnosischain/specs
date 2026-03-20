@@ -39,7 +39,7 @@ Gnosis chain intends to sets a different gas limit than Ethereum, TBD.
 | Network | Timestamp    | Date & Time (UTC)             | Fork Hash  | Beacon Chain Epoch |
 | ------- | ------------ | ----------------------------- | ---------- | ------------------ |
 | Chiado  | 1773653580   | Mar-16-2026, 09:33:00 +UTC    | 0x71c457cd | 1353216            |
-| Mainnet | 1776168380   | Apr-14-2026, 12:06:20 +UTC    | TBD        | 1714688            |
+| Mainnet | 1776168380   | Apr-14-2026, 12:06:20 +UTC    | 0xcfca387c | 1714688            |
 
 ### Readiness Checklist
 
