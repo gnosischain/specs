@@ -14,8 +14,8 @@ This repository hosts the current specifications for Gnosis chain and Gnosis bea
 | Code name | Activation | Specs |
 | - | - | - |
 | Glamsterdam | _TBD_ | [glamsterdam.md](./network-upgrades/glamsterdam.md) |
-| Fusaka | _TBD_ | [fusaka.md](./network-upgrades/fusaka.md) |
-| Balancer | _TBD_ | [balancer.md](./network-upgrades/balancer.md) |
+| Fusaka | Apr 14 2026 | [fusaka.md](./network-upgrades/fusaka.md) |
+| Balancer | Dec 22 2025 | [balancer.md](./network-upgrades/balancer.md) |
 | Pectra | Apr 30 2025 | [pectra.md](./network-upgrades/pectra.md) |
 | Dencun | Mar 11 2024 | [dencun.md](./network-upgrades/dencun.md) |
 | Shapella | Aug 01 2023 | [shapella.md](./network-upgrades/shapella.md) |

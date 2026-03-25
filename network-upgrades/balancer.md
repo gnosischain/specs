@@ -23,13 +23,13 @@ This change is unique to Gnosis. Full specification in [`/execution/balancer_rec
 
 **List of outstanding items before deployment.**
 
-- [ ] Client Integration Testing
-  - [ ] Deploy a Client Integration Testnet
-  - [ ] Integration Tests
-- [ ] Select Fork Triggers
-  - [ ] Chiado
-  - [ ] Mainnet
-- [ ] Deploy Clients
-- [ ] Activate Fork
+- [x] Client Integration Testing
+  - [x] Deploy a Client Integration Testnet
+  - [x] Integration Tests
+- [x] Select Fork Triggers
+  - [ ] Chiado (N/A)
+  - [x] Mainnet
+- [x] Deploy Clients
+- [x] Activate Fork
 
 
