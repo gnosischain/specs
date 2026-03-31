@@ -64,6 +64,6 @@ The actual `blob_fee` as calculated via `calc_blob_fee` is deducted from the sen
 - [x] Select Fork Triggers
   - [x] Chiado
   - [x] Mainnet
-- [ ] Deploy Clients
-- [ ] Activate Fork
+- [x] Deploy Clients
+- [x] Activate Fork
 
