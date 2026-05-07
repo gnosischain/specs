@@ -10,7 +10,11 @@ Note that modified preset values will result in different SSZ data structures, s
 ETHEREUM_SPEC_COMMIT: v1.6.0-beta.0
 ```
 
-### Preset diff
+## Deposit contract diff
+
+Gnosis Beacon Chain deposit contract uses the ERC20 token GNO [`0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb`](https://gnosisscan.io/token/0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb) to stake. However, balances in the beacon chain are denominated with mGNO, where 1 GNO = 32 mGNO. This lowers the barrier of entry to stakers, making the minimum activation balance just 1 GNO (instead of 32 ETH on Etheruem mainnet). To mantain equivalnce, the deposit contract multiplies by a [factor of 32](https://github.com/gnosischain/deposit-contract/blob/fa9f3a495ad745e59ec144bd0797fbb358f2b2db/contracts/SBCDepositContract.sol#L164-L165) all deposit amounts. Therefore, a deposit of 1 GNO will be credited as 32 mGNO in the Gnosis Beacon Chain. Then, the withdrawn values are divided by a [factor of 32](https://github.com/gnosischain/deposit-contract/blob/fa9f3a495ad745e59ec144bd0797fbb358f2b2db/contracts/SBCDepositContract.sol#L313-L314).
+
+## Preset diff
 
 | Name                                         | Ethereum | Gnosis | Rationale |
 | -------------------------------------------- | -------- | ------ | --------- |
@@ -21,7 +25,7 @@ ETHEREUM_SPEC_COMMIT: v1.6.0-beta.0
 | `MAX_WITHDRAWALS_PER_PAYLOAD`                | `16`     | `8`    | Scaled for shorter epochs |
 | `MAX_PENDING_PARTIALS_PER_WITHDRAWALS_SWEEP` | `8`      | `6`    | Must be < `MAX_WITHDRAWALS_PER_PAYLOAD` ([post-mortem](docs/postmortems/2025-10-15-pectra-withdrawals.md)) |
 
-### Config diff
+## Config diff
 
 | Name                                    | Ethereum spec | Gnosis spec  |   |
 | --------------------------------------- | ------------- | ------------ | - |
